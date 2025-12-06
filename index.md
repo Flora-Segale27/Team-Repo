@@ -5,7 +5,7 @@ hide: true
 show_reading_time: false
 ---
 
-Hi! My name is [Your Full Name]
+This is the team repo!
 
 ### Development Environment
 
@@ -30,7 +30,7 @@ Hi! My name is [Your Full Name]
 
 ### Class Progress
 
-> Here is my progress through coding, click to see these online
+> Here is our progress through coding, click to see these online
 
 <div style="display: flex; flex-wrap: wrap; gap: 10px;">
     <a href="{{site.baseurl}}/snake" style="text-decoration: none;">
