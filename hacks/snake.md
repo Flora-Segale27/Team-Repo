@@ -17,7 +17,7 @@ permalink: /snake/
         display: none;
         border-style: solid;
         border-width: 10px;
-        border-color: #FFFFFF;
+        border-color: black;
     }
     canvas:focus{
         outline: none;
@@ -144,6 +144,13 @@ permalink: /snake/
         let food = {x: 0, y: 0};
         let score;
         let wall;
+
+        //Special Mode
+        let specialMode = false;
+        let rainbowIndex = 0;
+        const rainbowColors = ["red","orange","yellow","green","blue","indigo","violet"];
+
+
         /* Display Control */
         /////////////////////////////////////////////////////////////
         // 0 for the game
@@ -259,22 +266,57 @@ permalink: /snake/
                 }
             }
             // Snake eats food checker
-            if(checkBlock(snake[0].x, snake[0].y, food.x, food.y)){
+            if (checkBlock(snake[0].x, snake[0].y, food.x, food.y)) {
+
+                // grow snake
                 snake[snake.length] = {x: snake[0].x, y: snake[0].y};
-                altScore(++score);
+
+                // special food gives +2
+                if (specialMode) {
+                    score += 2;
+                    specialMode = false;   // turn off after eating
+                } else {
+                    score += 1;
+                }
+
+                altScore(score);
+
+                // every 7 points → activate special mode
+                if (score % 7 === 0) {
+                    specialMode = true;
+                }
+
                 addFood();
-                activeDot(food.x, food.y);
             }
+
             // Repaint canvas
-            ctx.beginPath();
-            ctx.fillStyle = "royalblue";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            // Checkerboard background (two shades of green)
+            for (let y = 0; y < canvas.height / BLOCK; y++) {
+                for (let x = 0; x < canvas.width / BLOCK; x++) {
+                    if ((x + y) % 2 === 0) {
+                        ctx.fillStyle = "#3aa64b"; // lighter green
+                    } else {
+                        ctx.fillStyle = "#2f8b3c"; // darker green
+                    }
+                    ctx.fillRect(x * BLOCK, y * BLOCK, BLOCK, BLOCK);
+                }
+            }
+
+
             // Paint snake
             for(let i = 0; i < snake.length; i++){
                 activeDot(snake[i].x, snake[i].y);
             }
             // Paint food
-            activeDot(food.x, food.y);
+            // special rainbow food
+            if (specialMode) {
+                ctx.fillStyle = rainbowColors[rainbowIndex];
+                ctx.fillRect(food.x * BLOCK, food.y * BLOCK, BLOCK, BLOCK);
+                rainbowIndex = (rainbowIndex + 1) % rainbowColors.length;
+            } else {
+                activeDot(food.x, food.y);
+            }
+
             // Debug
             //document.getElementById("debug").innerHTML = snake_dir + " " + snake_next_dir + " " + snake[0].x + " " + snake[0].y;
             // Recursive call after speed delay, déjà vu
@@ -327,7 +369,7 @@ permalink: /snake/
         /* Dot for Food or Snake part */
         /////////////////////////////////////////////////////////////
         let activeDot = function(x, y){
-            ctx.fillStyle = "#FFFFFF";
+            ctx.fillStyle = "purple";
             ctx.fillRect(x * BLOCK, y * BLOCK, BLOCK, BLOCK);
         }
         /* Random food placement */
@@ -362,8 +404,8 @@ permalink: /snake/
         /////////////////////////////////////////////////////////////
         let setWall = function(wall_value){
             wall = wall_value;
-            if(wall === 0){screen_snake.style.borderColor = "#606060";}
-            if(wall === 1){screen_snake.style.borderColor = "#FFFFFF";}
+            if(wall === 0){screen_snake.style.borderColor = "black";}
+            if(wall === 1){screen_snake.style.borderColor = "black";}
         }
     })();
 </script>
