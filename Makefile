@@ -109,7 +109,8 @@ serve-yat: use-yat clean
 	@make serve-current
 
 # General serve target (uses whatever is in _config.yml/Gemfile)
-serve-current: stop convert
+serve-current: stop
+	@-make convert 2>/dev/null || true
 	@echo "Starting server with current config/Gemfile..."
 	@@nohup bundle install && bundle exec jekyll serve -H $(HOST) -P $(PORT) > $(LOG_FILE) 2>&1 & \
 		PID=$$!; \
