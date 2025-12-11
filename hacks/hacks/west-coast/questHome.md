@@ -46,4 +46,6 @@ lxdData:
       Image: "/images/west-coast/resume.svg"
       Alt: "CS Portfolio Quest Resume"
 ---
+{%- comment %}
 {%- include tailwind/quests/west-coast.html -%}
+{%- endcomment %}

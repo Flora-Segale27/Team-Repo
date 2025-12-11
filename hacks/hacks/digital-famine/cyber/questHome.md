@@ -66,4 +66,6 @@ lxdData:
       Image: "/images/digital-famine/cyber.svg"
       Alt: "Frontend Submodule 6"
 ---
+{%- comment %}
 {%- include tailwind/quests/digital-famine.html -%}
+{%- endcomment %}

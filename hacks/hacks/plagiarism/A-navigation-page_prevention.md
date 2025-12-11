@@ -68,4 +68,6 @@ lxdData:
       Image: "/images/plagiarism/certificate.svg"
       Alt: "Academic integrity mastery certificate"
 ---
+{%- comment %}
 {%- include tailwind/plagiarism_info.html -%}
+{%- endcomment %}

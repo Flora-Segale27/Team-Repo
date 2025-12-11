@@ -36,7 +36,9 @@ lxdData:
       Alt: "Pete Hegseth Official Portrait, CC BY-SA 4.0"
 ---
 
+{%- comment %}
 {%- include tailwind/plagiarism_cases.html -%}
+{%- endcomment %}
 
 ---
 

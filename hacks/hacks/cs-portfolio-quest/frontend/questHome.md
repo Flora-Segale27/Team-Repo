@@ -66,7 +66,9 @@ lxdData:
       Alt: "Frontend Submodule 6"
 ---
 
+{%- comment %}
 {%- include tailwind/cs-portfolio-mini_quest_info.html -%}
+{%- endcomment %}
 
 <!-- FRQ: Placeholder -->
 <div class="frq-box" id="quest-frq" style="border:1px solid #2c2c2e; padding:1rem; border-radius:8px; margin:1.5rem 0; background:#1c1c1e; color:#e5e5ea; font-weight:300;">

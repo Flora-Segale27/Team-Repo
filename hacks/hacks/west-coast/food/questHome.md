@@ -54,4 +54,6 @@ lxdData:
       XP_Reward: 150
       Unlock_Condition: "Complete San Francisco activities"
 ---
+{%- comment %}
 {%- include tailwind/quests/west-coast-food.html -%}
+{%- endcomment %}

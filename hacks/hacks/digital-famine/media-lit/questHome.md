@@ -52,7 +52,9 @@ lxdData:
       Image: "/images/digital-famine/congratulations.png"
       Alt: "Analytics Submodule 5"
 ---
+{%- comment %}
 {%- include tailwind/cs-portfolio-quest_info.html -%}
+{%- endcomment %}
 
 <style>
 /* Galaxy background like Submodule 2 */
