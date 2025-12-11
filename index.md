@@ -43,6 +43,11 @@ This is the team repo!
             Turtle
         </div>
     </a>
+    <a href="{{site.baseurl}}/custompong" style="text-decoration: none;">
+        <div style="background-color: #667eea; color: white; padding: 10px 20px; border-radius: 5px; font-weight: bold;">
+            🏓 Pong Game
+        </div>
+    </a>
 </div>
 
 <br>
