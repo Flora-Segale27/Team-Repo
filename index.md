@@ -49,7 +49,7 @@ This is the team repo!
         </div>
     </a>
     <a href="{{site.baseurl}}/connect4/play/" style="text-decoration: none;">
-        <div style="background-color: #f4d34a; color: black; padding: 10px 20px; border-radius: 5px; font-weight: bold;">
+        <div style="background-color: #f4d34a; color: white; padding: 10px 20px; border-radius: 5px; font-weight: bold;">
             Connect 4
         </div>
     </a>
