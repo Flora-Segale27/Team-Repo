@@ -128,6 +128,9 @@ permalink: /connect4/play/
   .stash{display:flex; align-items:center; gap:10px; color:#d6dbe6}
   .dot{width:18px; height:18px; border-radius:50%}
   .red{background:var(--red)} .yellow{background:var(--yellow)}
+  /* Stash (payment) dots: use pink and purple to distinguish coins players pay with */
+  .stash .red{background:#ff6ec7}
+  .stash .yellow{background:#7c3aed}
 
   /* Board (blue plate with circular holes) */
   #boardWrap{position:relative; padding:var(--boardPad); background:var(--blue);
@@ -148,8 +151,9 @@ permalink: /connect4/play/
   #board .hole.filled::after{
     content:""; position:absolute; inset:0; border-radius:var(--radius);
   }
-  #board .hole.red::after{background:var(--red)}
-  #board .hole.yellow::after{background:var(--yellow)}
+  /* Play pieces: use pink for the first player and purple for the second player */
+  #board .hole.red::after{background:#ff6ec7}
+  #board .hole.yellow::after{background:#7c3aed}
 
   /* Falling coin overlay */
   .coin{
@@ -159,7 +163,9 @@ permalink: /connect4/play/
     transition:transform .28s cubic-bezier(.2,.9,.2,1);
   }
   .coin.red{background:var(--red)}
-  .coin.yellow{background:var(--yellow)}
+  /* Falling coin colors match the play pieces */
+  .coin.red{background:#ff6ec7}
+  .coin.yellow{background:#7c3aed}
 
   /* Win Overlay */
   .win-overlay{
