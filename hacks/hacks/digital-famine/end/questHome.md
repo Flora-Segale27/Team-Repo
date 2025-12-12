@@ -54,7 +54,9 @@ lxdData:
       Alt: "end Submodule 5"
 ---
 
+{%- comment %}
 {%- include tailwind/quests/digital-famine.html -%}
+{%- endcomment %}
 
 <script type="module">
   import { initEndModuleProgression } from '{{site.baseurl}}/assets/js/digitalFamine/endModuleProgression.js';

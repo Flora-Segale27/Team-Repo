@@ -8,7 +8,7 @@ permalink: /javascript/project/blackjack
     #game-container {
         width: 800px;
         margin: 0 auto;
-        background-color: #fff;
+        background-color: #236c08ff;
         padding: 20px;
         border-radius: 8px;
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);

@@ -43,6 +43,16 @@ This is the team repo!
             Turtle
         </div>
     </a>
+    <a href="{{site.baseurl}}/custompong" style="text-decoration: none;">
+        <div style="background-color: #667eea; color: white; padding: 10px 20px; border-radius: 5px; font-weight: bold;">
+            🏓 Pong Game
+        </div>
+    </a>
+    <a href="{{site.baseurl}}/connect4/play/" style="text-decoration: none;">
+        <div style="background-color: #f4d34a; color: white; padding: 10px 20px; border-radius: 5px; font-weight: bold;">
+            Connect 4
+        </div>
+    </a>
 </div>
 
 <br>
