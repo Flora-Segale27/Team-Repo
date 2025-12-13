@@ -5,6 +5,12 @@ permalink: /connect4/play/
 ---
 
 <div id="app" class="wrap">
+  <!-- Theme Selector -->
+  <div style="position: fixed; top: 20px; right: 20px; display: flex; gap: 10px; z-index: 3000;">
+    <button class="btn" id="themeClassic" style="background-color: #2b2f3a;">Classic</button>
+    <button class="btn" id="themeMidnight" style="background-color: #1a1a1a;">Midnight</button>
+  </div>
+
   <!-- Start Screen -->
   <section id="start" class="card center">
     <h1 class="title">Connect 4</h1>
@@ -495,6 +501,14 @@ class Connect4Game {
   }
 
   initializeEventListeners() {
+    // Theme buttons
+    document.getElementById('themeClassic').addEventListener('click', () => {
+      this.setTheme('classic');
+    });
+    document.getElementById('themeMidnight').addEventListener('click', () => {
+      this.setTheme('midnight');
+    });
+
     // Start screen buttons
     this.ui.elements.start.querySelectorAll('.btn').forEach(button => {
       button.addEventListener('click', () => {
@@ -610,6 +624,30 @@ class Connect4Game {
 
   switchPlayer() {
     this.currentPlayer = this.currentPlayer === this.redPlayer ? this.yellowPlayer : this.redPlayer;
+  }
+
+  setTheme(themeName) {
+    const root = document.documentElement;
+    const themes = {
+      classic: {
+        red: '#ef4444',
+        yellow: '#facc15',
+        blue: '#1658e5',
+        card: '#17181c'
+      },
+      midnight: {
+        red: '#ff1744',
+        yellow: '#ffeb3b',
+        blue: '#0d1b4d',
+        card: '#0f0f1e'
+      }
+    };
+
+    const theme = themes[themeName] || themes.classic;
+    root.style.setProperty('--red', theme.red);
+    root.style.setProperty('--yellow', theme.yellow);
+    root.style.setProperty('--blue', theme.blue);
+    root.style.setProperty('--card', theme.card);
   }
 
   endGame(message) {
