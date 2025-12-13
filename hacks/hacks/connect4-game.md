@@ -154,6 +154,7 @@ permalink: /connect4/play/
     cursor:pointer; transition:filter .2s;
   }
   #board .hole:hover{filter:brightness(0.95)}
+  #board .hole.preview-col{filter:brightness(1.1); box-shadow:inset 0 0 0 6px #0e3ea3, 0 0 12px rgba(255,255,255,0.3);}
   #board .hole.filled::after{
     content:""; position:absolute; inset:0; border-radius:var(--radius);
   }
@@ -389,6 +390,26 @@ class GameUI {
       yellowCoins: document.getElementById('cYellow'),
       restartBtn: document.getElementById('restart')
     };
+    this.initializeBoardPreview();
+  }
+
+  initializeBoardPreview() {
+    this.elements.board.addEventListener('mouseover', (e) => {
+      const hole = e.target.closest('.hole');
+      if (!hole) return;
+      const col = hole.dataset.col;
+      document.querySelectorAll(`#board .hole[data-col="${col}"]`).forEach(h => {
+        h.classList.add('preview-col');
+      });
+    });
+
+    this.elements.board.addEventListener('mouseout', (e) => {
+      const hole = e.target.closest('.hole');
+      if (!hole) return;
+      document.querySelectorAll('#board .hole.preview-col').forEach(h => {
+        h.classList.remove('preview-col');
+      });
+    });
   }
 
   showStartScreen() {
