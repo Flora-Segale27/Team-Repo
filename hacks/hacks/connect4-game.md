@@ -488,6 +488,8 @@ class Connect4Game {
     this.ui = new GameUI();
     this.isRunning = false;
     this.isAnimating = false;
+    this.elapsedTime = 0;
+    this.boardColorChanged = false;
     
     this.initializeEventListeners();
   }
@@ -526,12 +528,17 @@ class Connect4Game {
     this.currentPlayer = this.redPlayer;
     this.isRunning = true;
     this.isAnimating = false;
+    this.elapsedTime = 0;
+    this.boardColorChanged = false;
 
     // Setup UI
     this.ui.showGameScreen();
     this.ui.createBoard(this.board.rows, this.board.cols);
     this.ui.updateBoard(this.board);
     this.ui.updatePlayerInfo(this.redPlayer, this.yellowPlayer);
+    
+    // Reset board color to blue
+    this.ui.elements.boardWrap.style.backgroundColor = '';
 
     // Start timer
     this.timer.start(
@@ -581,6 +588,14 @@ class Connect4Game {
 
   handleTimerTick() {
     if (!this.isRunning) return;
+    
+    this.elapsedTime++;
+    
+    // Change board color to green after 30 seconds
+    if (this.elapsedTime === 30 && !this.boardColorChanged) {
+      this.boardColorChanged = true;
+      this.ui.elements.boardWrap.style.backgroundColor = '#4caf50';
+    }
     
     this.currentPlayer.decrementTime();
     
