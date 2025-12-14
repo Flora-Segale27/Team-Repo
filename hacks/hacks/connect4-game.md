@@ -540,12 +540,20 @@ class Connect4Game {
 
   initializeEventListeners() {
     // Theme buttons
-    document.getElementById('themeClassic').addEventListener('click', () => {
-      this.setTheme('classic');
-    });
-    document.getElementById('themeMidnight').addEventListener('click', () => {
-      this.setTheme('midnight');
-    });
+    const themeClassicBtn = document.getElementById('themeClassic');
+    const themeMidnightBtn = document.getElementById('themeMidnight');
+    // Ensure the theme container is on the document body and above overlays so it's always clickable
+    const themeContainer = themeClassicBtn ? themeClassicBtn.parentElement : null;
+    if (themeContainer && themeContainer !== document.body) {
+      // move to body so fixed positioning and z-index work reliably above overlays
+      try { document.body.appendChild(themeContainer); } catch (e) { /* ignore */ }
+      // enforce high stacking and pointer events
+      themeContainer.style.zIndex = '100000';
+      themeContainer.style.pointerEvents = 'auto';
+    }
+
+    if (themeClassicBtn) themeClassicBtn.addEventListener('click', () => { this.setTheme('classic'); });
+    if (themeMidnightBtn) themeMidnightBtn.addEventListener('click', () => { this.setTheme('midnight'); });
     const enableBtn = document.getElementById('enableSound');
     if (enableBtn) {
       enableBtn.addEventListener('click', () => {
