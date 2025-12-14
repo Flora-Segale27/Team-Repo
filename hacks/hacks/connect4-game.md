@@ -29,9 +29,9 @@ permalink: /connect4/play/
   <!-- Game Screen - Board Overlay -->
   <section id="game" class="hidden game-overlay">
     <div class="hud">
-      <!-- Red panel -->
+      <!-- Pink panel -->
       <div class="panel red-side">
-        <h2>Red</h2>
+        <h2>Pink</h2>
         <div class="timer" id="tRed">05:00</div>
         <div class="stash">
           <div class="dot red"></div>
@@ -44,9 +44,9 @@ permalink: /connect4/play/
         <!-- falling coin overlay -->
         <div id="fall" class="coin hidden"></div>
       </div>
-      <!-- Yellow panel -->
+      <!-- Purple panel -->
       <div class="panel yellow-side">
-        <h2>Yellow</h2>
+        <h2>Purple</h2>
         <div class="timer" id="tYellow">05:00</div>
         <div class="stash">
           <div class="dot yellow"></div>
@@ -205,6 +205,8 @@ permalink: /connect4/play/
   /* Subtle glow variants for win banner */
   .win-card.red{ box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 30px rgba(255,110,199,0.12); }
   .win-card.yellow{ box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 30px rgba(255,235,59,0.12); }
+  .win-card.pink{ box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 30px rgba(255,110,199,0.12); }
+  .win-card.purple{ box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 30px rgba(124,58,237,0.12); }
   .win-card.draw{ box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 30px rgba(120,200,255,0.08); }
   .win-title{
     font-size: 36px;
@@ -502,11 +504,11 @@ class GameUI {
     const winOverlay = document.createElement('div');
     winOverlay.className = 'win-overlay';
 
-    // Determine emoji and card class from message
+    // Determine emoji and card class from message (Pink/Purple/Draw)
     let emoji = '🤝';
     let cardClass = 'draw';
-    if (/Red\b/i.test(message)) { emoji = '🔴'; cardClass = 'red'; }
-    else if (/Yellow\b/i.test(message)) { emoji = '🟡'; cardClass = 'yellow'; }
+    if (/Pink\b/i.test(message)) { emoji = '💗'; cardClass = 'pink'; }
+    else if (/Purple\b/i.test(message)) { emoji = '🟣'; cardClass = 'purple'; }
     else if (/Draw/i.test(message)) { emoji = '🤝'; cardClass = 'draw'; }
 
     winOverlay.innerHTML = `
@@ -523,8 +525,8 @@ class GameUI {
 class Connect4Game {
   constructor() {
     this.board = new GameBoard(6, 7);
-    this.redPlayer = new Player('Red', 'red');
-    this.yellowPlayer = new Player('Yellow', 'yellow');
+    this.redPlayer = new Player('Pink', 'red');
+    this.yellowPlayer = new Player('Purple', 'yellow');
     this.currentPlayer = this.redPlayer;
     this.timer = new GameTimer();
     this.ui = new GameUI();
