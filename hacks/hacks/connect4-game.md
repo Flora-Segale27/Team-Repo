@@ -715,7 +715,7 @@ class Connect4Game {
       midnight: {
         red: '#ff1744',
         yellow: '#ffeb3b',
-        blue: '#001f3f',
+        blue: '#000b1f',
         card: '#0f0f1e'
       }
     };
