@@ -102,6 +102,8 @@ permalink: /connect4/play/
     padding:10px 16px; border-radius:12px; cursor:pointer; font-weight:600;
     transition:transform .06s ease, background .2s, border .2s;
   }
+  /* Active theme button visual */
+  .btn.theme-active{ box-shadow:0 4px 12px rgba(0,0,0,0.4); transform:translateY(-2px); border-color:#fff }
   .btn:hover{transform:translateY(-1px); background:#323849}
   .btn:active{transform:translateY(0)}
   .btn.danger{background:#b71c1c; border-color:#c72a2a}
@@ -741,5 +743,59 @@ class Connect4Game {
 // ========= INITIALIZE GAME =========
 (() => {
   const game = new Connect4Game();
+  // expose for debugging and external handlers
+  window.connect4Game = game;
+
+  // Robust theme button setup: ensure the theme container is attached to body
+  const setupThemeButtons = () => {
+    const classic = document.getElementById('themeClassic');
+    const midnight = document.getElementById('themeMidnight');
+    const container = classic ? classic.parentElement : null;
+    if (container && container.parentElement !== document.body) {
+      try { document.body.appendChild(container); } catch (e) {}
+    }
+    if (container) {
+      container.style.position = 'fixed';
+      container.style.top = '20px';
+      container.style.right = '20px';
+      container.style.zIndex = '100000';
+      container.style.pointerEvents = 'auto';
+    }
+
+    const setActiveButton = (name) => {
+      if (classic) classic.classList.toggle('theme-active', name === 'classic');
+      if (midnight) midnight.classList.toggle('theme-active', name === 'midnight');
+    };
+
+    const applyTheme = (name) => {
+      setActiveButton(name);
+      if (window.connect4Game && typeof window.connect4Game.setTheme === 'function') {
+        window.connect4Game.setTheme(name);
+      } else {
+        // fallback: set root variables directly
+        const root = document.documentElement;
+        const themes = {
+          classic: { red: '#ef4444', yellow: '#facc15', blue: '#1658e5', card: '#17181c' },
+          midnight: { red: '#ff1744', yellow: '#ffeb3b', blue: '#0d1b4d', card: '#0f0f1e' }
+        };
+        const t = themes[name] || themes.classic;
+        root.style.setProperty('--red', t.red);
+        root.style.setProperty('--yellow', t.yellow);
+        root.style.setProperty('--blue', t.blue);
+        root.style.setProperty('--card', t.card);
+      }
+    };
+
+    if (classic) classic.addEventListener('click', () => applyTheme('classic'));
+    if (midnight) midnight.addEventListener('click', () => applyTheme('midnight'));
+
+    // initialize active state
+    setTimeout(() => setActiveButton('classic'), 0);
+  };
+
+  // Run immediately (script is at page end), but also on DOMContentLoaded just in case
+  try { setupThemeButtons(); } catch (e) {}
+  document.addEventListener('DOMContentLoaded', setupThemeButtons);
+
 })();
 </script>
