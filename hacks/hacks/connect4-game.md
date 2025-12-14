@@ -567,8 +567,11 @@ class Connect4Game {
     });
 
     // Restart button
+    // Restart button (confirm before restarting)
     this.ui.elements.restartBtn.addEventListener('click', () => {
-      this.restart();
+      if (confirm('Start a new game?')) {
+        this.restart();
+      }
     });
   }
 
