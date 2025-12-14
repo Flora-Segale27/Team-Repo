@@ -715,7 +715,7 @@ class Connect4Game {
       midnight: {
         red: '#ff1744',
         yellow: '#ffeb3b',
-        blue: '#0d1b4d',
+        blue: '#001f3f',
         card: '#0f0f1e'
       }
     };
@@ -725,6 +725,14 @@ class Connect4Game {
     root.style.setProperty('--yellow', theme.yellow);
     root.style.setProperty('--blue', theme.blue);
     root.style.setProperty('--card', theme.card);
+    // Also set the boardWrap background explicitly so theme applies even when inline styles exist
+    try {
+      if (this && this.ui && this.ui.elements && this.ui.elements.boardWrap) {
+        this.ui.elements.boardWrap.style.backgroundColor = theme.blue;
+      }
+    } catch (e) {
+      // ignore if called before game instance exists
+    }
   }
 
   endGame(message) {
