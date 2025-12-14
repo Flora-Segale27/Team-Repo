@@ -202,6 +202,10 @@ permalink: /connect4/play/
     animation: popIn 0.4s ease-out 0.1s forwards;
     border: 2px solid #3a4151;
   }
+  /* Subtle glow variants for win banner */
+  .win-card.red{ box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 30px rgba(255,110,199,0.12); }
+  .win-card.yellow{ box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 30px rgba(255,235,59,0.12); }
+  .win-card.draw{ box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 30px rgba(120,200,255,0.08); }
   .win-title{
     font-size: 36px;
     margin: 0 0 24px;
@@ -497,9 +501,17 @@ class GameUI {
   showWinMessage(message) {
     const winOverlay = document.createElement('div');
     winOverlay.className = 'win-overlay';
+
+    // Determine emoji and card class from message
+    let emoji = '🤝';
+    let cardClass = 'draw';
+    if (/Red\b/i.test(message)) { emoji = '🔴'; cardClass = 'red'; }
+    else if (/Yellow\b/i.test(message)) { emoji = '🟡'; cardClass = 'yellow'; }
+    else if (/Draw/i.test(message)) { emoji = '🤝'; cardClass = 'draw'; }
+
     winOverlay.innerHTML = `
-      <div class="win-card">
-        <h2 class="win-title">${message}</h2>
+      <div class="win-card ${cardClass}">
+        <h2 class="win-title">${emoji} ${message}</h2>
         <button class="btn win-btn" onclick="this.parentElement.parentElement.remove()">Continue</button>
       </div>
     `;
