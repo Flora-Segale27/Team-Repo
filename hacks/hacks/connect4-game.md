@@ -5,10 +5,13 @@ permalink: /connect4/play/
 ---
 
 <div id="app" class="wrap">
+  <!-- Drop sound -->
+  <audio id="dropSound" src="/assets/audio/coin.mp3" preload="auto"></audio>
   <!-- Theme Selector -->
   <div style="position: fixed; top: 20px; right: 20px; display: flex; gap: 10px; z-index: 3000;">
     <button class="btn" id="themeClassic" style="background-color: #2b2f3a;">Classic</button>
     <button class="btn" id="themeMidnight" style="background-color: #1a1a1a;">Midnight</button>
+    <button class="btn" id="enableSound" style="background-color: #0b1020; display: none;">Enable Sound</button>
   </div>
 
   <!-- Start Screen -->
@@ -529,6 +532,20 @@ class Connect4Game {
     document.getElementById('themeMidnight').addEventListener('click', () => {
       this.setTheme('midnight');
     });
+    const enableBtn = document.getElementById('enableSound');
+    if (enableBtn) {
+      enableBtn.addEventListener('click', () => {
+        const snd = document.getElementById('dropSound');
+        if (!snd) return;
+        snd.play().then(() => {
+          snd.pause();
+          snd.currentTime = 0;
+          enableBtn.style.display = 'none';
+        }).catch((err) => {
+          console.warn('Enable sound failed', err);
+        });
+      });
+    }
 
     // Start screen buttons
     this.ui.elements.start.querySelectorAll('.btn').forEach(button => {
@@ -591,6 +608,18 @@ class Connect4Game {
     
     if (row < 0) return; // Column is full
     if (!this.currentPlayer.usesCoin()) return; // No coins left
+    // Valid drop — play sound now (still within the user gesture)
+    const snd = document.getElementById('dropSound');
+    if (snd) {
+      try { snd.currentTime = 0; } catch (e) {}
+      if (typeof snd.play === 'function') {
+        snd.play().catch((err) => {
+          console.warn('Drop sound play failed', err);
+          const btn = document.getElementById('enableSound');
+          if (btn) btn.style.display = 'inline-block';
+        });
+      }
+    }
 
     this.isAnimating = true;
 
