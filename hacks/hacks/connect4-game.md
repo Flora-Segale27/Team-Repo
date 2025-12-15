@@ -561,13 +561,17 @@ class Connect4Game {
       enableBtn.addEventListener('click', () => {
         const snd = document.getElementById('dropSound');
         if (!snd) return;
-        snd.play().then(() => {
+        // Try to unlock audio without waiting for promise
+        try {
+          snd.volume = 0.5;
+          snd.play().catch(() => {});
           snd.pause();
           snd.currentTime = 0;
-          enableBtn.style.display = 'none';
-        }).catch((err) => {
-          console.warn('Enable sound failed', err);
-        });
+        } catch (e) {}
+        // Mark as enabled and hide button
+        if (window.connect4Game) window.connect4Game.soundEnabled = true;
+        enableBtn.style.display = 'none';
+        console.log('Sound unlocked');
       });
     }
 
@@ -644,6 +648,7 @@ class Connect4Game {
           console.warn('Drop sound play failed', err);
           const btn = document.getElementById('enableSound');
           if (btn) btn.style.display = 'inline-block';
+
         });
       }
     }
