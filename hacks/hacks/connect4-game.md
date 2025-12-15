@@ -27,6 +27,18 @@ permalink: /connect4/play/
     <p class="press">…or press <kbd>Enter</kbd> to start with 5:00</p>
   </section>
 
+  <!-- Audio Unlock Modal (appears before game starts) -->
+  <div id="audioModal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 5000; display: none; align-items: center; justify-content: center;">
+    <div class="card" style="text-align: center; max-width: 400px;">
+      <h2 style="margin-top: 0;">Enable Audio?</h2>
+      <p style="color: #a9b0be; margin: 0 0 24px;">Click below to unlock sound for coin drops</p>
+      <div class="row center">
+        <button id="audioUnlockBtn" class="btn" style="background-color: #1658e5; border-color: #1658e5;">Enable Audio</button>
+        <button id="audioSkipBtn" class="btn danger">Skip</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Game Screen - Board Overlay -->
   <section id="game" class="hidden game-overlay">
     <div class="hud">
@@ -568,10 +580,29 @@ class Connect4Game {
           await this.audioCtx.resume();
         }
         this.soundEnabled = true;
+        console.log('Audio unlocked');
       } catch (e) {
-        // ignore
+        console.log('Audio unlock failed', e);
       }
     };
+
+    // Setup audio modal listeners (before game starts)
+    const audioModal = document.getElementById('audioModal');
+    const unlockBtn = document.getElementById('audioUnlockBtn');
+    const skipBtn = document.getElementById('audioSkipBtn');
+    if (unlockBtn) {
+      unlockBtn.addEventListener('click', async () => {
+        await this.unlockAudio();
+        if (audioModal) audioModal.style.display = 'none';
+        // Play a test click to confirm audio works
+        setTimeout(() => this.playClick(520, 0.1), 100);
+      });
+    }
+    if (skipBtn) {
+      skipBtn.addEventListener('click', () => {
+        if (audioModal) audioModal.style.display = 'none';
+      });
+    }
     
     // Play a short synthesized click/beep using an AudioBuffer for reliable playback
     this.playClick = (freq = 440, duration = 0.12) => {
@@ -686,6 +717,36 @@ class Connect4Game {
   }
 
   startGame(timeInSeconds) {
+    // Show audio unlock modal before starting
+    const audioModal = document.getElementById('audioModal');
+    if (audioModal) {
+      audioModal.style.display = 'flex';
+      // Don't proceed with game start yet; wait for user to click unlock or skip
+      // We'll start the game after they respond
+      const startGameNow = () => {
+        audioModal.style.display = 'none';
+        this._initializeGame(timeInSeconds);
+      };
+      // Override the modal buttons to call startGameNow after
+      const unlockBtn = document.getElementById('audioUnlockBtn');
+      const skipBtn = document.getElementById('audioSkipBtn');
+      if (unlockBtn) {
+        unlockBtn.onclick = async () => {
+          await this.unlockAudio();
+          setTimeout(() => this.playClick(520, 0.1), 100);
+          startGameNow();
+        };
+      }
+      if (skipBtn) {
+        skipBtn.onclick = startGameNow;
+      }
+    } else {
+      // Fallback if modal doesn't exist
+      this._initializeGame(timeInSeconds);
+    }
+  }
+
+  _initializeGame(timeInSeconds) {
     // Reset game state
     this.board.reset();
     this.redPlayer.reset(timeInSeconds);
@@ -721,67 +782,11 @@ class Connect4Game {
     
     if (row < 0) return; // Column is full
     if (!this.currentPlayer.usesCoin()) return; // No coins left
-    // Valid drop — play sound now (still within the user gesture)
-    const snd = document.getElementById('dropSound');
-    let playedHtmlAudio = false;
-    console.log('Attempting drop sound. snd element:', !!snd, 'audioCtx state:', this.audioCtx ? this.audioCtx.state : 'no-audioctx');
-    if (snd) { try { console.log('snd.paused', snd.paused, 'snd.muted', snd.muted, 'snd.volume', snd.volume); } catch(e) { console.log('snd props read failed', e); } }
-    if (snd) {
-      try {
-        snd.currentTime = 0;
-        // try play; if it rejects we'll fall back to WebAudio
-        const p = snd.play();
-        if (p && typeof p.then === 'function') {
-          await p.catch((err) => { console.log('HTML5 audio.play() rejected', err); });
-          // If play didn't throw, assume it started
-          playedHtmlAudio = true;
-        } else {
-          // some browsers don't return a promise — assume it worked
-          playedHtmlAudio = true;
-        }
-      } catch (err) {
-        console.log('HTML5 play failed sync', err);
-        playedHtmlAudio = false;
-      }
-    }
 
-    // If HTML5 audio didn't play, use Web Audio API beep as a fallback
-    if (!playedHtmlAudio) {
-      try {
-        // ensure audio context exists and is resumed
-        this.initAudio();
-        if (this.audioCtx && this.audioCtx.state === 'suspended') {
-          try { await this.audioCtx.resume(); this.soundEnabled = true; } catch (e) {}
-        }
-        if (this.audioCtx && this.soundEnabled) {
-          const freq = (this.currentPlayer === this.redPlayer) ? 520 : 360;
-          this.playClick(freq, 0.12);
-          console.log('Played WebAudio buffer click');
-          const status = document.getElementById('soundStatus');
-          if (status) { status.style.display = 'inline-block'; status.textContent = 'Sound: on (WebAudio)'; }
-        } else if (this.audioCtx) {
-          // context exists but may be suspended; try resuming and play once
-          try {
-            await this.audioCtx.resume();
-            this.soundEnabled = true;
-            const freq = (this.currentPlayer === this.redPlayer) ? 520 : 360;
-            this.playClick(freq, 0.12);
-            const status = document.getElementById('soundStatus');
-            if (status) { status.style.display = 'inline-block'; status.textContent = 'Sound: on (WebAudio)'; }
-          } catch (e) {
-            const btn = document.getElementById('enableSound');
-            if (btn) { btn.style.display = 'inline-block'; btn.setAttribute('aria-hidden','false'); }
-          }
-        } else {
-          // show enable button if nothing played
-          const btn = document.getElementById('enableSound');
-          if (btn) { btn.style.display = 'inline-block'; btn.setAttribute('aria-hidden','false'); }
-        }
-      } catch (e) {
-        console.log('WebAudio fallback failed', e);
-        const btn = document.getElementById('enableSound');
-        if (btn) { btn.style.display = 'inline-block'; btn.setAttribute('aria-hidden','false'); }
-      }
+    // Play sound using WebAudio if unlocked
+    if (this.soundEnabled && this.audioCtx) {
+      const freq = (this.currentPlayer === this.redPlayer) ? 520 : 360;
+      this.playClick(freq, 0.12);
     }
 
     this.isAnimating = true;
