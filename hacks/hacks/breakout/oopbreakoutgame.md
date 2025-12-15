@@ -153,9 +153,9 @@ permalink: oopbreakoutgame
       constructor(x, y, radius = 8) {
           super(x, y);
           this.radius = radius;
-          this.dx = 2;
-          this.dy = -2;
-          this.color = "#0095DD";
+          this.dx = 4;
+          this.dy = -4;
+          this.color = "#8114ffff";
       }
       
       draw(ctx) {
@@ -223,7 +223,7 @@ permalink: oopbreakoutgame
           this.baseWidth = 75;
           this.width = this.baseWidth;
           this.height = 10;
-          this.color = "#0095DD";
+          this.color = "#e93b3bff";
           this.speed = 7;
           this.leftPressed = false;
           this.rightPressed = false;
@@ -275,7 +275,7 @@ permalink: oopbreakoutgame
           this.height = height;
           this.status = 1; // 1 = active, 0 = destroyed
           this.hasPowerUp = Math.random() < 0.3; // 30% chance
-          this.color = this.hasPowerUp ? "gold" : "#0095DD";
+          this.color = this.hasPowerUp ? "gold" : "#06f8ecff";
       }
       
       draw(ctx) {
