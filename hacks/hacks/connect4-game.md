@@ -8,10 +8,11 @@ permalink: /connect4/play/
   <!-- Drop sound -->
   <audio id="dropSound" src="/assets/audio/coin.mp3" preload="auto"></audio>
   <!-- Theme Selector -->
-  <div style="position: fixed; top: 20px; right: 20px; display: flex; gap: 10px; z-index: 3000;">
+  <div id="themeContainer" style="position: fixed; top: 20px; right: 20px; display: flex; gap: 10px; align-items:center; z-index: 3000;">
     <button class="btn" id="themeClassic" style="background-color: #2b2f3a;">Classic</button>
     <button class="btn" id="themeMidnight" style="background-color: #1a1a1a;">Midnight</button>
-    <button class="btn" id="enableSound" style="background-color: #0b1020; display: none;">Enable Sound</button>
+    <button class="btn" id="enableSound" aria-hidden="false" style="background-color: #0b1020; display: inline-block;">Enable Sound</button>
+    <span id="soundStatus" style="color:#cbd5e1; font-size:13px; margin-left:6px; display:inline-block;">Sound: off</span>
   </div>
 
   <!-- Start Screen -->
@@ -102,6 +103,10 @@ permalink: /connect4/play/
     padding:10px 16px; border-radius:12px; cursor:pointer; font-weight:600;
     transition:transform .06s ease, background .2s, border .2s;
   }
+
+  /* Sound status */
+  #soundStatus{display:inline-block}
+  #enableSound{display:inline-block}
   /* Active theme button visual */
   .btn.theme-active{ box-shadow:0 4px 12px rgba(0,0,0,0.4); transform:translateY(-2px); border-color:#fff }
   .btn:hover{transform:translateY(-1px); background:#323849}
@@ -536,6 +541,82 @@ class Connect4Game {
     this.isAnimating = false;
     this.elapsedTime = 0;
     this.boardColorChanged = false;
+    // Audio: WebAudio fallback + unlock state
+    this.audioCtx = null;
+    this.gainNode = null;
+    this.soundEnabled = false; // becomes true after user gesture/unlock
+
+    this.initAudio = () => {
+      if (this.audioCtx) return;
+      try {
+        const Ctx = window.AudioContext || window.webkitAudioContext;
+        if (!Ctx) return;
+        this.audioCtx = new Ctx();
+        this.gainNode = this.audioCtx.createGain();
+        // Slightly louder by default so users can hear it
+        this.gainNode.gain.value = 0.12;
+        this.gainNode.connect(this.audioCtx.destination);
+      } catch (e) {
+        this.audioCtx = null;
+      }
+    };
+
+    this.unlockAudio = async () => {
+      try {
+        this.initAudio();
+        if (this.audioCtx && this.audioCtx.state === 'suspended') {
+          await this.audioCtx.resume();
+        }
+        this.soundEnabled = true;
+      } catch (e) {
+        // ignore
+      }
+    };
+    
+    // Play a short synthesized click/beep using an AudioBuffer for reliable playback
+    this.playClick = (freq = 440, duration = 0.12) => {
+      try {
+        this.initAudio();
+        if (!this.audioCtx) return;
+        const sr = this.audioCtx.sampleRate || 44100;
+        const length = Math.floor(sr * duration);
+        const buffer = this.audioCtx.createBuffer(1, length, sr);
+        const data = buffer.getChannelData(0);
+        // fill with decaying sine wave
+        for (let i = 0; i < length; i++) {
+          const t = i / sr;
+          // decaying envelope
+          const env = Math.exp(-12 * t);
+          data[i] = Math.sin(2 * Math.PI * freq * t) * env * 0.6;
+        }
+        const src = this.audioCtx.createBufferSource();
+        src.buffer = buffer;
+        const g = this.audioCtx.createGain();
+        g.gain.value = 1.0; // already scaled in buffer
+        src.connect(g);
+        g.connect(this.gainNode || this.audioCtx.destination);
+        src.start();
+        // ensure node cleaned up
+        src.stop(this.audioCtx.currentTime + duration + 0.02);
+        console.log('Played buffer click freq=', freq);
+      } catch (e) {
+        console.log('playClick failed', e);
+      }
+    };
+    // Diagnostic info at construction time
+    try {
+      console.log('AudioContext available:', !!(window.AudioContext || window.webkitAudioContext));
+      const sndEl = document.getElementById('dropSound');
+      console.log('dropSound element present:', !!sndEl);
+      // Try a HEAD request to check file availability (may be blocked in some setups)
+      try {
+        fetch('/assets/audio/coin.mp3', { method: 'HEAD' }).then(r => {
+          console.log('coin.mp3 fetch HEAD ok:', r && r.ok);
+        }).catch(e => console.log('coin.mp3 HEAD fetch failed', e));
+      } catch (e) { console.log('coin.mp3 fetch error', e); }
+    } catch (e) {
+      console.log('Audio diagnostics failed', e);
+    }
     
     this.initializeEventListeners();
   }
@@ -558,20 +639,21 @@ class Connect4Game {
     if (themeMidnightBtn) themeMidnightBtn.addEventListener('click', () => { this.setTheme('midnight'); });
     const enableBtn = document.getElementById('enableSound');
     if (enableBtn) {
-      enableBtn.addEventListener('click', () => {
-        const snd = document.getElementById('dropSound');
-        if (!snd) return;
-        // Try to unlock audio without waiting for promise
+      enableBtn.addEventListener('click', async () => {
+        // Prefer unlocking WebAudio; also try HTML5 audio as a fallback unlock
         try {
-          snd.volume = 0.5;
-          snd.play().catch(() => {});
-          snd.pause();
-          snd.currentTime = 0;
+          await this.unlockAudio();
         } catch (e) {}
-        // Mark as enabled and hide button
-        if (window.connect4Game) window.connect4Game.soundEnabled = true;
+        const snd = document.getElementById('dropSound');
+        if (snd) {
+          try { snd.currentTime = 0; await snd.play().catch(() => {}); snd.pause(); snd.currentTime = 0; } catch (e) {}
+        }
+        this.soundEnabled = true;
         enableBtn.style.display = 'none';
-        console.log('Sound unlocked');
+        enableBtn.setAttribute('aria-hidden','true');
+        const status = document.getElementById('soundStatus');
+        if (status) { status.style.display = 'inline-block'; status.textContent = 'Sound: on'; }
+        console.log('Sound unlocked (WebAudio fallback)');
       });
     }
 
@@ -641,15 +723,64 @@ class Connect4Game {
     if (!this.currentPlayer.usesCoin()) return; // No coins left
     // Valid drop — play sound now (still within the user gesture)
     const snd = document.getElementById('dropSound');
+    let playedHtmlAudio = false;
+    console.log('Attempting drop sound. snd element:', !!snd, 'audioCtx state:', this.audioCtx ? this.audioCtx.state : 'no-audioctx');
+    if (snd) { try { console.log('snd.paused', snd.paused, 'snd.muted', snd.muted, 'snd.volume', snd.volume); } catch(e) { console.log('snd props read failed', e); } }
     if (snd) {
-      try { snd.currentTime = 0; } catch (e) {}
-      if (typeof snd.play === 'function') {
-        snd.play().catch((err) => {
-          console.warn('Drop sound play failed', err);
-          const btn = document.getElementById('enableSound');
-          if (btn) btn.style.display = 'inline-block';
+      try {
+        snd.currentTime = 0;
+        // try play; if it rejects we'll fall back to WebAudio
+        const p = snd.play();
+        if (p && typeof p.then === 'function') {
+          await p.catch((err) => { console.log('HTML5 audio.play() rejected', err); });
+          // If play didn't throw, assume it started
+          playedHtmlAudio = true;
+        } else {
+          // some browsers don't return a promise — assume it worked
+          playedHtmlAudio = true;
+        }
+      } catch (err) {
+        console.log('HTML5 play failed sync', err);
+        playedHtmlAudio = false;
+      }
+    }
 
-        });
+    // If HTML5 audio didn't play, use Web Audio API beep as a fallback
+    if (!playedHtmlAudio) {
+      try {
+        // ensure audio context exists and is resumed
+        this.initAudio();
+        if (this.audioCtx && this.audioCtx.state === 'suspended') {
+          try { await this.audioCtx.resume(); this.soundEnabled = true; } catch (e) {}
+        }
+        if (this.audioCtx && this.soundEnabled) {
+          const freq = (this.currentPlayer === this.redPlayer) ? 520 : 360;
+          this.playClick(freq, 0.12);
+          console.log('Played WebAudio buffer click');
+          const status = document.getElementById('soundStatus');
+          if (status) { status.style.display = 'inline-block'; status.textContent = 'Sound: on (WebAudio)'; }
+        } else if (this.audioCtx) {
+          // context exists but may be suspended; try resuming and play once
+          try {
+            await this.audioCtx.resume();
+            this.soundEnabled = true;
+            const freq = (this.currentPlayer === this.redPlayer) ? 520 : 360;
+            this.playClick(freq, 0.12);
+            const status = document.getElementById('soundStatus');
+            if (status) { status.style.display = 'inline-block'; status.textContent = 'Sound: on (WebAudio)'; }
+          } catch (e) {
+            const btn = document.getElementById('enableSound');
+            if (btn) { btn.style.display = 'inline-block'; btn.setAttribute('aria-hidden','false'); }
+          }
+        } else {
+          // show enable button if nothing played
+          const btn = document.getElementById('enableSound');
+          if (btn) { btn.style.display = 'inline-block'; btn.setAttribute('aria-hidden','false'); }
+        }
+      } catch (e) {
+        console.log('WebAudio fallback failed', e);
+        const btn = document.getElementById('enableSound');
+        if (btn) { btn.style.display = 'inline-block'; btn.setAttribute('aria-hidden','false'); }
       }
     }
 
@@ -789,7 +920,7 @@ class Connect4Game {
         const root = document.documentElement;
         const themes = {
           classic: { red: '#ef4444', yellow: '#facc15', blue: '#1658e5', card: '#17181c' },
-          midnight: { red: '#ff1744', yellow: '#ffeb3b', blue: '#0d1b4d', card: '#0f0f1e' }
+           midnight: { red: '#ff1744', yellow: '#ffeb3b', blue: '#000b1f', card: '#0f0f1e' }
         };
         const t = themes[name] || themes.classic;
         root.style.setProperty('--red', t.red);
@@ -799,11 +930,10 @@ class Connect4Game {
       }
     };
 
-    if (classic) classic.addEventListener('click', () => applyTheme('classic'));
-    if (midnight) midnight.addEventListener('click', () => applyTheme('midnight'));
-
     // initialize active state
     setTimeout(() => setActiveButton('classic'), 0);
+     // Note: theme buttons are already set up with event listeners in Connect4Game.initializeEventListeners()
+     // so we don't add them again here. Just ensure the container positioning is correct.
   };
 
   // Run immediately (script is at page end), but also on DOMContentLoaded just in case
