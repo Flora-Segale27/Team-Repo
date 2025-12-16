@@ -493,3 +493,130 @@ function giveHint() {
         return;
     }
   }
+  // Event Listeners
+document.addEventListener('DOMContentLoaded', () => {
+    // Menu buttons
+    elements.newGameBtn.addEventListener('click', initGame);
+    elements.newGameBtn1.addEventListener('click', initGame);
+    elements.menuReturn.addEventListener('click', () => {
+        elements.menu.style.display = 'block';
+        elements.gameover.style.display = 'none';
+        elements.gameScreen.style.display = 'none';
+        if (gameState.timerInterval) {
+            clearInterval(gameState.timerInterval);
+        }
+    });
+    // Instructions model
+    elements.instructions.addEventListener('click', () => {
+        elements.instructionsmodel.style.display = 'flex';
+    });
+    elements.closeBtn.addEventListener('click', () => {
+        elements.instructionsmodel.style.display = 'none';
+    });
+    window.addEventListener('click', (e) => {
+        if (e.target === elements.instructionsmodel) {
+            elements.instructionsmodel.style.display = 'none';
+        }
+    });
+    // Game controls
+    elements.hintBtn.addEventListener('click', giveHint);
+    elements.undoBtn.addEventListener('click', undoMove);
+    elements.restartBtn.addEventListener('click', initGame);
+    elements.playAgainBtn.addEventListener('click', initGame);
+    // Stock pile click
+    elements.stockPile.addEventListener('click', handleStockClick);
+    // Foundation pile click handling
+    elements.foundationPiles.forEach((pile, index) => {
+        pile.addEventListener('click', () => {
+            // Check if we can move from waste to foundation
+            if (gameState.waste.length > 0) {
+                const card = gameState.waste[gameState.waste.length - 1];
+                if (canMoveToFoundation(card, index)) {
+                    moveToFoundation(card, 'waste', 0, 0, index);
+                    return;
+                }
+            }
+            // Check if we can move from tableau to foundation
+            for (let i = 0; i < 7; i++) {
+                const pile = gameState.tableau[i];
+                if (pile.length === 0) continue;
+                // Find the topmost face-up card
+                let topFaceUpIndex = -1;
+                for (let k = pile.length - 1; k >= 0; k--) {
+                    if (pile[k].faceUp) {
+                        topFaceUpIndex = k;
+                        break;
+                    }
+                }
+                if (topFaceUpIndex === -1) continue;
+                const card = pile[topFaceUpIndex];
+                if (canMoveToFoundation(card, index)) {
+                    moveToFoundation(card, 'tableau', i, topFaceUpIndex, index);
+                    return;
+                }
+            }
+        });
+    });
+    // Tableau pile click handling
+    elements.tableauPiles.forEach((pile, index) => {
+        pile.addEventListener('click', (e) => {
+            const clickedCard = e.target.closest('.card');
+            if (clickedCard && !clickedCard.classList.contains('face-down')) {
+                // Card was clicked directly
+                const pileIndex = parseInt(clickedCard.dataset.pileIndex);
+                const cardIndex = parseInt(clickedCard.dataset.cardIndex);
+                const card = gameState.tableau[pileIndex][cardIndex];
+                // Try to move this card to another tableau pile
+                for (let i = 0; i < 7; i++) {
+                    if (i === pileIndex) continue;
+                    if (canMoveToTableau(card, i)) {
+                        moveToTableau(card, 'tableau', pileIndex, cardIndex, i);
+                        return;
+                    }
+                }
+                // Try to move this card to foundation
+                for (let i = 0; i < 4; i++) {
+                    if (canMoveToFoundation(card, i)) {
+                        moveToFoundation(card, 'tableau', pileIndex, cardIndex, i);
+                        return;
+                    }
+                }
+            } else {
+                // Empty space or face-down card was clicked
+                // Check if we can move from waste to this tableau
+                if (gameState.waste.length > 0) {
+                    const card = gameState.waste[gameState.waste.length - 1];
+                    if (canMoveToTableau(card, index)) {
+                        moveToTableau(card, 'waste', 0, 0, index);
+                        return;
+                    }
+                }
+            }
+        });
+    });
+    // Waste pile click handling
+    elements.wastePile.addEventListener('click', (e) => {
+        if (gameState.waste.length === 0) return;
+        const card = gameState.waste[gameState.waste.length - 1];
+        // Try to move to foundation
+        for (let i = 0; i < 4; i++) {
+            if (canMoveToFoundation(card, i)) {
+                moveToFoundation(card, 'waste', 0, 0, i);
+                return;
+            }
+        }
+        // Try to move to tableau
+        for (let i = 0; i < 7; i++) {
+            if (canMoveToTableau(card, i)) {
+                moveToTableau(card, 'waste', 0, 0, i);
+                return;
+            }
+        }
+    });
+});
+// Start with menu visible
+window.onload = () => {
+    elements.menu.style.display = 'block';
+    elements.gameScreen.style.display = 'none';
+    elements.gameover.style.display = 'none';
+};
