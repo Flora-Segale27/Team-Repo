@@ -60,7 +60,7 @@ This is the team repo!
     </a>
      <a href="{{site.baseurl}}/solitaire/" style="text-decoration: none;">
         <div style="background-color: #04ff00ff; color: white; padding: 10px 20px; border-radius: 5px; font-weight: bold;">
-            Turtle
+            Solitare
         </div>
     </a>
 </div>
