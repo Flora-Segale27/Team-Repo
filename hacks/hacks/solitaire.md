@@ -350,8 +350,8 @@ permalink: /solitaire/
                 <div id="waste" class="card-pile waste-pile empty" data-pile="waste"></div>
                 <div class="card-pile empty"></div>
                 <div id="foundation_0" class="card-pile foundation" data-pile="foundation" data-index="0"></div>
-                <div id="foundation_1" class="card-pile foundation" data-pile="foundation" data-index="1"></div>
-                <div id="foundation_2" class="card-pile foundation" data-pile="foundation" data-index="2"></div>
+                <div id="founf dation_1" class="card-pile foundation" data-pile="foundation" data-index="1"></div>
+                <div id="foundation_2" clfass="card-pile foundation" data-pile="foundation" data-index="2"></div>
                 <div id="foundation_3" class="card-pile foundation" data-pile="foundation" data-index="3"></div>
             </div>
             <div class="game-board">
