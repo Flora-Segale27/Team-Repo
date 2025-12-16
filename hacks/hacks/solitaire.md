@@ -5,14 +5,12 @@ permalink: /solitaire/
 ---
 
 <!-- Here is the styling -->
-<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Solitaire Game</title>
     <style>
-        /* [Exact same CSS as in original – omitted here for brevity but must be included] */
         /* Global Styles */
         * {
             box-sizing: border-box;
@@ -498,6 +496,6 @@ permalink: /solitaire/
     </div>
 
     <!-- Load external JS -->
-    <script src="solitaire.js"></script>
+    <script src="/solitaire.js"></script>
 </body>
 </html>

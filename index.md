@@ -59,7 +59,7 @@ This is the team repo!
         </div>
     </a>
      <a href="{{site.baseurl}}/solitaire/" style="text-decoration: none;">
-        <div style="background-color: #04ff00ff; color: white; padding: 10px 20px; border-radius: 5px; font-weight: bold;">
+        <div style="background-color: #0e21b0ff; color: white; padding: 10px 20px; border-radius: 5px; font-weight: bold;">
             Solitaire
         </div>
     </a>
