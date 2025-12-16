@@ -6,7 +6,7 @@ permalink: /javascript/project/memory
 
 <style>
     .memoryCanvas { 
-        border: 10px solid #000;
+        border: 10px solid #0b1c3d; /* dark blue border */
         display: block;
         margin-left: auto;
         margin-right: auto;
@@ -25,7 +25,7 @@ permalink: /javascript/project/memory
 
     .end-btn {
         background-color: #000;
-        color: #fff; /* white text */
+        color: #fff;
     }
 </style>
 
@@ -58,7 +58,7 @@ let totalPairs = 0;
 
 // ---------- GRID ----------
 function drawGrid(cols, rows) {
-    memCtx.strokeStyle = '#000';
+    memCtx.strokeStyle = '#0b1c3d'; // dark blue grid lines
     memCtx.lineWidth = 10;
 
     const w = memCanvas.width;
@@ -150,7 +150,8 @@ function revealEmoji(col, row) {
     const cellH = memCanvas.height / gridSize;
     const index = row * gridSize + col;
 
-    memCtx.fillStyle = "#FFF";
+    // 🔹 light blue background instead of white
+    memCtx.fillStyle = "#ADD8E6";
     memCtx.fillRect(
         col * cellW + 5,
         row * cellH + 5,
