@@ -434,7 +434,7 @@ function giveHint() {
 // Initialize DOM and event listeners once page is ready
 document.addEventListener('DOMContentLoaded', () => {
     // Initialize DOM elements
-    elements = {
+    elements = {  // <-- Changed from "const elements" to just "elements"
         menu: document.getElementById('menu'),
         gameover: document.getElementById('gameover'),
         gameScreen: document.getElementById('game_screen'),
@@ -478,6 +478,7 @@ document.addEventListener('DOMContentLoaded', () => {
     elements.menu.style.display = 'block';
     elements.gameScreen.style.display = 'none';
     elements.gameover.style.display = 'none';
+    // <-- NO CLOSING }); HERE - REMOVED!
 
     // Menu buttons
     elements.newGameBtn.addEventListener('click', initGame);
