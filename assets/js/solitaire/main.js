@@ -172,3 +172,164 @@ function updateTimer() {
 function updateScore() {
     elements.scoreValue.textContent = gameState.score;
 }
+// Render the game state
+function renderGame() {
+    // Clear any existing highlights
+    clearCardHighlights();
+    // Render stock pile
+    renderStockPile();
+    // Render waste pile
+    renderWastePile();
+    // Render foundation piles
+    for (let i = 0; i < 4; i++) {
+        renderFoundationPile(i);
+    }
+    // Render tableau piles
+    for (let i = 0; i < 7; i++) {
+        renderTableauPile(i);
+    }
+    // Check for win
+    checkWin();
+}
+// Render stock pile
+function renderStockPile() {
+    elements.stockPile.innerHTML = '';
+    if (gameState.stock.length > 0) {
+        const card = document.createElement('div');
+        card.className = 'card face-down';
+        card.dataset.pile = 'stock';
+        elements.stockPile.appendChild(card);
+    } else {
+        elements.stockPile.classList.add('empty');
+    }
+}
+// Render waste pile
+function renderWastePile() {
+    elements.wastePile.innerHTML = '';
+    if (gameState.waste.length > 0) {
+        const card = gameState.waste[gameState.waste.length - 1];
+        const cardEl = createCardElement(card, 'waste', 0);
+        elements.wastePile.appendChild(cardEl);
+        elements.wastePile.classList.remove('empty');
+    } else {
+        elements.wastePile.classList.add('empty');
+    }
+}
+// Render a foundation pile
+function renderFoundationPile(index) {
+    const pile = elements.foundationPiles[index];
+    pile.innerHTML = '';
+    if (gameState.foundations[index].length > 0) {
+        const card = gameState.foundations[index][gameState.foundations[index].length - 1];
+        const cardEl = createCardElement(card, 'foundation', index);
+        pile.appendChild(cardEl);
+    }
+}
+// Render a tableau pile
+function renderTableauPile(index) {
+    const pile = elements.tableauPiles[index];
+    pile.innerHTML = '';
+    const pileCards = gameState.tableau[index];
+    if (pileCards.length === 0) {
+        pile.classList.add('empty');
+        return;
+    }
+    pile.classList.remove('empty');
+    // Render each card in the pile
+    for (let i = 0; i < pileCards.length; i++) {
+        const card = pileCards[i];
+        const cardEl = createCardElement(card, 'tableau', index, i);
+        cardEl.style.top = `${i * 20}px`;
+        pile.appendChild(cardEl);
+    }
+}
+// Create a card element
+function createCardElement(card, pileType, pileIndex, cardIndex = 0) {
+    const cardEl = document.createElement('div');
+    cardEl.className = `card ${suitColors[card.suit]}`;
+    if (!card.faceUp) {
+        cardEl.classList.add('face-down');
+        cardEl.dataset.pile = pileType;
+        cardEl.dataset.pileIndex = pileIndex;
+        cardEl.dataset.cardIndex = cardIndex;
+        return cardEl;
+    }
+    // Add card data attributes
+    cardEl.dataset.pile = pileType;
+    cardEl.dataset.pileIndex = pileIndex;
+    cardEl.dataset.cardIndex = cardIndex;
+    cardEl.dataset.suit = card.suit;
+    cardEl.dataset.value = card.value;
+    // Create card content
+    const top = document.createElement('div');
+    top.className = 'card-top';
+    top.innerHTML = `<span>${card.value}</span><span class="suit">${card.suit}</span>`;
+    const bottom = document.createElement('div');
+    bottom.className = 'card-bottom';
+    bottom.innerHTML = `<span>${card.value}</span><span class="suit">${card.suit}</span>`;
+    cardEl.appendChild(top);
+    cardEl.appendChild(bottom);
+    return cardEl;
+}
+// Handle stock pile click (draw cards)
+function handleStockClick() {
+    // Save current state before making a move
+    saveGameState();
+    if (gameState.stock.length === 0) {
+        // Move waste back to stock
+        while (gameState.waste.length > 0) {
+            const card = gameState.waste.pop();
+            card.faceUp = false;
+            gameState.stock.push(card);
+        }
+    } else {
+        // Draw a card from stock to waste
+        const card = gameState.stock.pop();
+        card.faceUp = true;
+        gameState.waste.push(card);
+        updateScore();
+    }
+    renderGame();
+}
+// Check if a card can be moved to a foundation
+function canMoveToFoundation(card, foundationIndex) {
+    const foundation = gameState.foundations[foundationIndex];
+    // Foundation must be empty and card must be Ace
+    if (foundation.length === 0) {
+        return card.value === 'A';
+    }
+    // Check if card is next in sequence and same suit
+    const topCard = foundation[foundation.length - 1];
+    return card.suit === topCard.suit && 
+           valueRank[card.value] === valueRank[topCard.value] + 1;
+}
+// Move card to foundation
+function moveToFoundation(card, fromPile, pileIndex, cardIndex, foundationIndex) {
+    // Save current state before making a move
+    saveGameState();
+    // Remove card from source pile
+    if (fromPile === 'tableau') {
+        // Remove the card and all cards above it
+        const removedCards = gameState.tableau[pileIndex].splice(cardIndex);
+        // If we removed cards, check if we revealed a face-down card
+        if (gameState.tableau[pileIndex].length > 0 && 
+            !gameState.tableau[pileIndex][gameState.tableau[pileIndex].length - 1].faceUp) {
+            gameState.tableau[pileIndex][gameState.tableau[pileIndex].length - 1].faceUp = true;
+            gameState.score += 5;
+        }
+        // Add the top card to foundation
+        const topCard = removedCards[0];
+        gameState.foundations[foundationIndex].push(topCard);
+        // Put the rest back (they shouldn't have been moved)
+        if (removedCards.length > 1) {
+            gameState.tableau[pileIndex].push(...removedCards.slice(1));
+        }
+    } else if (fromPile === 'waste') {
+        const card = gameState.waste.pop();
+        gameState.foundations[foundationIndex].push(card);
+    }
+    // Update score
+    gameState.score += 10;
+    updateScore();
+    renderGame();
+}
