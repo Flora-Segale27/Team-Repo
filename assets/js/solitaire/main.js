@@ -333,3 +333,163 @@ function moveToFoundation(card, fromPile, pileIndex, cardIndex, foundationIndex)
     updateScore();
     renderGame();
 }
+// Check if a card can be moved to tableau
+function canMoveToTableau(card, tableauIndex) {
+    const pile = gameState.tableau[tableauIndex];
+    // Empty pile can only accept King
+    if (pile.length === 0) {
+        return card.value === 'K';
+    }
+    // Check alternating colors and descending order
+    const topCard = pile[pile.length - 1];
+    if (!topCard.faceUp) return false;
+    const isDifferentColor = suitColors[card.suit] !== suitColors[topCard.suit];
+    const isNextValue = valueRank[card.value] === valueRank[topCard.value] - 1;
+    return isDifferentColor && isNextValue;
+}
+// Move card(s) to tableau
+function moveToTableau(card, fromPile, pileIndex, cardIndex, targetTableauIndex) {
+    // Save current state before making a move
+    saveGameState();
+    let cardsToMove = [];
+    // Determine how many cards to move
+    if (fromPile === 'tableau') {
+        // Move all face-up cards from the selected index onward
+        cardsToMove = gameState.tableau[pileIndex].slice(cardIndex);
+        gameState.tableau[pileIndex] = gameState.tableau[pileIndex].slice(0, cardIndex);
+        // Check if we revealed a face-down card
+        if (gameState.tableau[pileIndex].length > 0 && 
+            !gameState.tableau[pileIndex][gameState.tableau[pileIndex].length - 1].faceUp) {
+            gameState.tableau[pileIndex][gameState.tableau[pileIndex].length - 1].faceUp = true;
+            gameState.score += 5;
+        }
+    } else if (fromPile === 'waste') {
+        cardsToMove = [gameState.waste.pop()];
+    }
+    // Add cards to target tableau
+    gameState.tableau[targetTableauIndex].push(...cardsToMove);
+    // Update score
+    gameState.score += cardsToMove.length * 5;
+    updateScore();
+    renderGame();
+}
+// Check if player has won
+function checkWin() {
+    let completeFoundations = 0;
+    for (let foundation of gameState.foundations) {
+        if (foundation.length === 13) {
+            completeFoundations++;
+        }
+    }
+    if (completeFoundations === 4) {
+        // Player has won!
+        clearInterval(gameState.timerInterval);
+        elements.winScore.textContent = `Score: ${gameState.score}`;
+        elements.winTime.textContent = `Time: ${elements.timerValue.textContent}`;
+        elements.winMessage.style.display = 'block';
+    }
+}
+// Clear any highlighted cards
+function clearCardHighlights() {
+    if (gameState.highlightedCard) {
+        gameState.highlightedCard.classList.remove('highlighted');
+        gameState.highlightedCard = null;
+    }
+    gameState.isHintActive = false;
+}
+// Undo last move
+function undoMove() {
+    if (gameState.moves.length <= 1) {
+        // Only initial state exists, nothing to undo
+        return;
+    }
+    restorePreviousState();
+}
+// Give a hint
+function giveHint() {
+    // Clear any existing highlights
+    clearCardHighlights();
+    gameState.isHintActive = true;
+    // First, check if any card can be moved to foundation (highest priority)
+    for (let i = 0; i < 4; i++) {
+        if (gameState.foundations[i].length === 13) continue;
+        // Check waste
+        if (gameState.waste.length > 0) {
+            const card = gameState.waste[gameState.waste.length - 1];
+            if (canMoveToFoundation(card, i)) {
+                // Highlight the waste card
+                const wasteCards = elements.wastePile.querySelectorAll('.card');
+                if (wasteCards.length > 0) {
+                    wasteCards[0].classList.add('highlighted');
+                    gameState.highlightedCard = wasteCards[0];
+                    setTimeout(clearCardHighlights, 2000);
+                    return;
+                }
+            }
+        }
+        // Check tableau
+        for (let j = 0; j < 7; j++) {
+            const pile = gameState.tableau[j];
+            if (pile.length === 0) continue;
+            // Find the topmost face-up card
+            let topFaceUpIndex = -1;
+            for (let k = pile.length - 1; k >= 0; k--) {
+                if (pile[k].faceUp) {
+                    topFaceUpIndex = k;
+                    break;
+                }
+            }
+            if (topFaceUpIndex === -1) continue;
+            const card = pile[topFaceUpIndex];
+            if (canMoveToFoundation(card, i)) {
+                // Highlight the card in tableau
+                const tableauCards = elements.tableauPiles[j].querySelectorAll('.card');
+                if (tableauCards.length > topFaceUpIndex) {
+                    tableauCards[topFaceUpIndex].classList.add('highlighted');
+                    gameState.highlightedCard = tableauCards[topFaceUpIndex];
+                    setTimeout(clearCardHighlights, 2000);
+                    return;
+                }
+            }
+        }
+    }
+    // Then check if any card can be moved to tableau
+    for (let i = 0; i < 7; i++) {
+        const pile = gameState.tableau[i];
+        if (pile.length === 0) continue;
+        // Find the topmost face-up card
+        let topFaceUpIndex = -1;
+        for (let k = pile.length - 1; k >= 0; k--) {
+            if (pile[k].faceUp) {
+                topFaceUpIndex = k;
+                break;
+            }
+        }
+        if (topFaceUpIndex === -1) continue;
+        const card = pile[topFaceUpIndex];
+        for (let j = 0; j < 7; j++) {
+            if (i === j) continue;
+            if (canMoveToTableau(card, j)) {
+                // Highlight the card in tableau
+                const tableauCards = elements.tableauPiles[i].querySelectorAll('.card');
+                if (tableauCards.length > topFaceUpIndex) {
+                    tableauCards[topFaceUpIndex].classList.add('highlighted');
+                    gameState.highlightedCard = tableauCards[topFaceUpIndex];
+                    setTimeout(clearCardHighlights, 2000);
+                    return;
+                }
+            }
+        }
+    }
+    // Finally, check if stock can be drawn
+    if (gameState.stock.length > 0) {
+        elements.stockPile.classList.add('highlighted');
+        gameState.highlightedCard = elements.stockPile;
+        setTimeout(() => {
+            elements.stockPile.classList.remove('highlighted');
+            gameState.highlightedCard = null;
+            gameState.isHintActive = false;
+        }, 2000);
+        return;
+    }
+  }
