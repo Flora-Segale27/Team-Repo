@@ -58,6 +58,11 @@ This is the team repo!
             Cookie Clicker
         </div>
     </a>
+     <a href="{{site.baseurl}}/solitaire/" style="text-decoration: none;">
+        <div style="background-color: #04ff00ff; color: white; padding: 10px 20px; border-radius: 5px; font-weight: bold;">
+            Turtle
+        </div>
+    </a>
 </div>
 
 <br>
