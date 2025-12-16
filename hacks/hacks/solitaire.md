@@ -113,7 +113,7 @@ permalink: /solitaire/
     .card {
         width: 76px;
         height: 106px;
-        border: 1px solid #111;
+        border: 1px solid #000000ff;
         border-radius: 8px;
         background: #fff;
         position: absolute;
@@ -418,7 +418,7 @@ permalink: /solitaire/
 </div>
 
 <!-- Single module entry point -->
-<script type="module" src="/assets/js/solitaire/main.js"></script>
+<script type="module" src="{{ '/assets/js/solitaire/main.js' | relative_url }}"></script>
 
 <style>
 /* Headings */
@@ -484,5 +484,62 @@ permalink: /solitaire/
     border-radius: 6px;
     border-left: 4px solid #27ae60;
 }
-</style>
 
+/* ===== MY POLISH OVERRIDES (added) ===== */
+body {
+  background:
+    radial-gradient(circle at 20% 10%, rgba(255,255,255,0.08), transparent 40%),
+    radial-gradient(circle at 80% 0%, rgba(255,255,255,0.06), transparent 45%),
+    linear-gradient(135deg, #083108, #0f5a18);
+}
+
+.container.bg-secondary {
+  background: rgba(0,0,0,0.22) !important;
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255,255,255,0.12);
+}
+
+.game-container {
+  background:
+    linear-gradient(145deg, rgba(18, 114, 18, 0.85), rgba(10, 82, 10, 0.85));
+  border: 1px solid rgba(255,255,255,0.12);
+}
+
+.card-pile {
+  border-radius: 14px;
+  border: 1px solid rgba(0,0,0,0.45);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.18), rgba(255,255,255,0.06));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.18),
+    0 10px 20px rgba(0,0,0,0.25);
+}
+
+.card {
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.35);
+  box-shadow:
+    0 10px 18px rgba(0,0,0,0.28),
+    inset 0 1px 0 rgba(255,255,255,0.55);
+  background: linear-gradient(180deg, #ffffff, #f6f6f6);
+}
+
+.card.face-down {
+  background:
+    radial-gradient(circle at 30% 30%, rgba(255,255,255,0.18), transparent 45%),
+    repeating-linear-gradient(
+      45deg,
+      rgba(255,255,255,.10) 0px,
+      rgba(255,255,255,.10) 8px,
+      rgba(255,255,255,.04) 8px,
+      rgba(255,255,255,.04) 16px
+    ),
+    linear-gradient(180deg, #0a4ea1, #063570);
+}
+
+@media (max-width: 820px) {
+  .card-pile, .stock-pile, .waste-pile { width: 70px; height: 98px; }
+  .card { width: 66px; height: 94px; }
+  .game-board, .foundation-row { gap: 10px; }
+}
+</style>

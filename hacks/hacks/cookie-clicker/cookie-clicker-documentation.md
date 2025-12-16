@@ -197,4 +197,3 @@ Choose one feature to add to the game. Be creative, but make sure it includes:
 4. Use an **if statement** so the feature only works under the right conditions.
 5. Use **localStorage** to save the state of your feature if needed.
 6. Test your feature to make sure it works as expected.
-
