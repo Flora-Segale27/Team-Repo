@@ -22,6 +22,11 @@ permalink: /javascript/project/memory
         font-size: 16px;
         cursor: pointer;
     }
+
+    .end-btn {
+        background-color: #000;
+        color: #fff; /* white text */
+    }
 </style>
 
 <h2>Memory Game</h2>
@@ -33,6 +38,7 @@ permalink: /javascript/project/memory
 <div style="text-align:center;">
     <button onclick="startGame(4)">4 x 4 Grid</button>
     <button onclick="startGame(5)">5 x 5 Grid</button>
+    <button class="end-btn" onclick="endGame()">End Game</button>
 </div>
 
 <script>
@@ -182,6 +188,26 @@ function startGame(size) {
     setTimeout(() => hideEmojis(size, size), 3000);
 }
 
+function endGame() {
+    memCtx.clearRect(0, 0, memCanvas.width, memCanvas.height);
+
+    memCtx.fillStyle = "rgba(0,0,0,0.85)";
+    memCtx.fillRect(0, 0, memCanvas.width, memCanvas.height);
+
+    memCtx.fillStyle = "#FFFFFF";
+    memCtx.textAlign = "center";
+
+    memCtx.font = "40px Arial";
+    memCtx.fillText("Game Over", memCanvas.width / 2, 170);
+
+    memCtx.font = "24px Arial";
+    memCtx.fillText(
+        `Score: ${score} pairs in ${attempts} attempts`,
+        memCanvas.width / 2,
+        220
+    );
+}
+
 memCanvas.addEventListener("click", e => {
     if (revealedCells.length >= 2) return;
 
@@ -218,19 +244,7 @@ memCanvas.addEventListener("click", e => {
     }
 
     if (score === totalPairs) {
-        memCtx.fillStyle = "#FFFFFF"; // make text white
-
-        memCtx.font = "40px Arial";
-        memCtx.textAlign = "center";
-        memCtx.fillText("Game Over", memCanvas.width / 2, 170);
-
-        memCtx.font = "24px Arial";
-        memCtx.fillText(
-        `Score: ${score} pairs in ${attempts} attempts`,
-        memCanvas.width / 2,
-        220
-);
-
+        endGame();
     }
 });
 
