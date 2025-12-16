@@ -392,9 +392,6 @@ permalink: /solitaire/
             }
         }
     </style>
-</head>
-<body>
-    <h2 class="game-title">Klondike Solitaire</h2>
     <div class="container">
         <!-- Main Menu -->
         <div id="menu" class="py-4 text-light">
@@ -496,6 +493,4 @@ permalink: /solitaire/
     </div>
 
     <!-- Load external JS -->
-    <script src="/solitaire.js"></script>
-</body>
-</html>
+    <script type="module" src="/assets/js/solitaire/main.js"></script>
