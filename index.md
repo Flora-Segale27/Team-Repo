@@ -53,9 +53,9 @@ This is the team repo!
             Connect 4
         </div>
     </a>
-    <a href="{{site.baseurl}}/cookie-clicker-game/" style="text-decoration: none;">
-        <div style="background-color: #aa6510ff; color: white; padding: 10px 20px; border-radius: 5px; font-weight: bold;">
-            Cookie Clicker
+    <a href="{{site.baseurl}}/javascript/project/memory" style="text-decoration: none;">
+        <div style="background-color: #ffffffff; color: black; padding: 10px 20px; border-radius: 5px; font-weight: bold;">
+            Memory Game
         </div>
     </a>
      <a href="{{site.baseurl}}/solitaire/" style="text-decoration: none;">

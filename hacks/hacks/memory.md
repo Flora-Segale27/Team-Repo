@@ -11,194 +11,228 @@ permalink: /javascript/project/memory
         margin-left: auto;
         margin-right: auto;
     }
-    
-    h2 {
+
+    h2, p {
         text-align: center;
-        margin-top: 20px;
+    }
+
+    button {
+        padding: 8px 14px;
+        margin: 8px;
+        font-size: 16px;
+        cursor: pointer;
     }
 </style>
 
 <h2>Memory Game</h2>
-<p>Score: <span class="score"></span></p>
-<p>Attempts: <span class="attempts"></span></p>
-<div class="container">
-    <canvas class="memoryCanvas" id="memoryCanvas" width="600" height="400"></canvas>
+<p>Score: <span class="score">0</span></p>
+<p>Attempts: <span class="attempts">0</span></p>
+
+<canvas class="memoryCanvas" id="memoryCanvas" width="600" height="400"></canvas>
+
+<div style="text-align:center;">
+    <button onclick="startGame(4)">4 x 4 Grid</button>
+    <button onclick="startGame(5)">5 x 5 Grid</button>
 </div>
 
 <script>
-    // Get canvas and context for drawing
-    const memCanvas = document.getElementById('memoryCanvas');
-    const memCtx = memCanvas.getContext('2d');
+const memCanvas = document.getElementById('memoryCanvas');
+const memCtx = memCanvas.getContext('2d');
 
-    // Game state variables
-    let clicks = 0; // Tracks number of clicks in current turn
-    let revealedCells = []; // Stores currently revealed cells [{col, row, emoji}]
-    let matchedCells = []; // Stores matched cells [{col, row}]
-    const scoreDisplay = document.querySelector('.score');
-    const attemptsDisplay = document.querySelector('.attempts');
-    let score = 0; // Player's score
-    let attempts = 0; // Number of attempts made
+const scoreDisplay = document.querySelector('.score');
+const attemptsDisplay = document.querySelector('.attempts');
+
+let gridSize = 4;
+let score = 0;
+let attempts = 0;
+let revealedCells = [];
+let matchedCells = [];
+let emojiList = [];
+let totalPairs = 0;
+
+// ---------- GRID ----------
+function drawGrid(cols, rows) {
+    memCtx.strokeStyle = '#000';
+    memCtx.lineWidth = 10;
+
+    const w = memCanvas.width;
+    const h = memCanvas.height;
+
+    for (let x = 0; x <= w; x += w / cols) {
+        memCtx.beginPath();
+        memCtx.moveTo(x, 0);
+        memCtx.lineTo(x, h);
+        memCtx.stroke();
+    }
+
+    for (let y = 0; y <= h; y += h / rows) {
+        memCtx.beginPath();
+        memCtx.moveTo(0, y);
+        memCtx.lineTo(w, y);
+        memCtx.stroke();
+    }
+}
+
+// ---------- EMOJIS ----------
+function shuffle(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
+
+function generateEmojis(size) {
+    const emojiPool = [
+        "😀","🎉","🍕","🐶","🌟","🚀","🍎","🦄",
+        "⚽","🎮","🎧","📱","🐱","🍔","🍩"
+    ];
+
+    totalPairs = Math.floor((size * size) / 2);
+    const selected = emojiPool.slice(0, totalPairs);
+    emojiList = [...selected, ...selected];
+
+    if (size % 2 !== 0) {
+        emojiList.push("❓");
+    }
+
+    shuffle(emojiList);
+}
+
+// ---------- DRAW ----------
+function drawEmojis(cols, rows) {
+    const cellW = memCanvas.width / cols;
+    const cellH = memCanvas.height / rows;
+
+    memCtx.font = `${Math.min(cellW, cellH) * 0.6}px serif`;
+    memCtx.textAlign = "center";
+    memCtx.textBaseline = "middle";
+
+    let index = 0;
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+            memCtx.fillText(
+                emojiList[index],
+                c * cellW + cellW / 2,
+                r * cellH + cellH / 2
+            );
+            index++;
+        }
+    }
+}
+
+function hideEmojis(cols, rows) {
+    const cellW = memCanvas.width / cols;
+    const cellH = memCanvas.height / rows;
+
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+            if (!matchedCells.some(m => m.col === c && m.row === r)) {
+                memCtx.fillStyle = "#CCC";
+                memCtx.fillRect(
+                    c * cellW + 5,
+                    r * cellH + 5,
+                    cellW - 10,
+                    cellH - 10
+                );
+            }
+        }
+    }
+}
+
+function revealEmoji(col, row) {
+    const cellW = memCanvas.width / gridSize;
+    const cellH = memCanvas.height / gridSize;
+    const index = row * gridSize + col;
+
+    memCtx.fillStyle = "#FFF";
+    memCtx.fillRect(
+        col * cellW + 5,
+        row * cellH + 5,
+        cellW - 10,
+        cellH - 10
+    );
+
+    memCtx.fillStyle = "#000";
+    memCtx.fillText(
+        emojiList[index],
+        col * cellW + cellW / 2,
+        row * cellH + cellH / 2
+    );
+
+    return emojiList[index];
+}
+
+// ---------- GAME ----------
+function startGame(size) {
+    gridSize = size;
+    score = 0;
+    attempts = 0;
+    revealedCells = [];
+    matchedCells = [];
+
     scoreDisplay.textContent = score;
     attemptsDisplay.textContent = attempts;
 
-    // Draws the grid lines on the canvas
-    function drawGrid(cols, rows) {
-        memCtx.strokeStyle = '#000';
-        memCtx.lineWidth = 10;
+    memCtx.clearRect(0, 0, memCanvas.width, memCanvas.height);
 
-        canvasCol = cols;
-        canvasRow = rows;
+    generateEmojis(size);
+    drawGrid(size, size);
+    drawEmojis(size, size);
 
-        const canvasWidth = memCanvas.width;
-        const canvasHeight = memCanvas.height;
+    setTimeout(() => hideEmojis(size, size), 3000);
+}
 
-        // Draw vertical lines
-        for (let x = 0; x <= canvasWidth; x += canvasWidth / canvasCol) {
-            memCtx.beginPath();
-            memCtx.moveTo(x, 0);
-            memCtx.lineTo(x, canvasHeight);
-            memCtx.stroke();
-        }
-        // Draw horizontal lines
-        for (let y = 0; y <= canvasHeight; y += canvasHeight / canvasRow) {
-            memCtx.beginPath();
-            memCtx.moveTo(0, y);
-            memCtx.lineTo(canvasWidth, y);
-            memCtx.stroke();
-        }
-    }
+memCanvas.addEventListener("click", e => {
+    if (revealedCells.length >= 2) return;
 
-    // Draws all emojis on the grid (used for initial reveal)
-    function drawEmojis(cols, rows, emojis) {
-        const cellWidth = memCanvas.width / cols;
-        const cellHeight = memCanvas.height / rows;
-        memCtx.font = `${Math.floor(Math.min(cellWidth, cellHeight) * 0.6)}px serif`;
-        memCtx.textAlign = "center";
-        memCtx.textBaseline = "middle";
+    const rect = memCanvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
 
-        let emojiIndex = 0;
-        for (let row = 0; row < rows; row++) {
-            for (let col = 0; col < cols; col++) {
-                const x = col * cellWidth + cellWidth / 2;
-                const y = row * cellHeight + cellHeight / 2;
-                const emoji = emojis[emojiIndex % emojis.length];
-                memCtx.fillText(emoji, x, y);
-                emojiIndex++;
-            }
-        }
-    }
+    const col = Math.floor(x / (memCanvas.width / gridSize));
+    const row = Math.floor(y / (memCanvas.height / gridSize));
 
-    drawGrid(4, 4); // Draw the grid
+    if (
+        matchedCells.some(m => m.col === col && m.row === row) ||
+        revealedCells.some(r => r.col === col && r.row === row)
+    ) return;
 
-    // Prepare emoji pairs and shuffle
-    const baseEmojis = [
-        "😀", "🎉", "🍕", "🐶", "🌟", "🚀", "🍎", "🦄"
-    ];
-    // Duplicate emojis for pairs (16 cells, 8 pairs)
-    const emojiList = [...baseEmojis, ...baseEmojis];
+    const emoji = revealEmoji(col, row);
+    revealedCells.push({ col, row, emoji });
 
-    // Shuffle the emoji list so pairs are random
-    function shuffle(array) {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
-        }
-    }
-    shuffle(emojiList);
+    if (revealedCells.length === 2) {
+        attempts++;
+        attemptsDisplay.textContent = attempts;
 
-    // Covers all cells except matched ones with a gray rectangle
-    function hideEmojis(cols, rows) {
-        const cellWidth = memCanvas.width / cols;
-        const cellHeight = memCanvas.height / rows;
-
-        for (let row = 0; row < rows; row++) {
-            for (let col = 0; col < cols; col++) {
-                // Only hide if not matched
-                if (!matchedCells.some(cell => cell.col === col && cell.row === row)) {
-                    memCtx.fillStyle = '#CCCCCC';
-                    memCtx.fillRect(col * cellWidth + 5, row * cellHeight + 5, cellWidth - 10, cellHeight - 10);
-                }
-            }
-        }
-    }
-    // Show all emojis for 3 seconds, then hide them
-    setTimeout(() => hideEmojis(4, 4), 3000);
-
-    // Reveals the emoji at a specific cell
-    function revealEmojiAt(col, row, emojis) {
-        const cellWidth = memCanvas.width / 4;
-        const cellHeight = memCanvas.height / 4;
-        const x = col * cellWidth + cellWidth / 2;
-        const y = row * cellHeight + cellHeight / 2;
-        const emojiIndex = row * 4 + col;
-        const emoji = emojis[emojiIndex];
-
-        // Draw white background and emoji
-        memCtx.fillStyle = '#FFFFFF';
-        memCtx.fillRect(col * cellWidth + 5, row * cellHeight + 5, cellWidth - 10, cellHeight - 10);
-        memCtx.fillStyle = '#000000';
-        memCtx.fillText(emoji, x, y);
-        return emoji;
-    }
-
-    // Handles user clicks on the canvas
-    memCanvas.addEventListener('click', (event) => {
-        // Limit to two revealed cells at a time
-        if (revealedCells.length >= 2) {
-            // Ignore clicks until current pair is processed
-            return;
-        }
-
-        // Get mouse position relative to canvas
-        const rect = memCanvas.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
-
-        // Calculate which cell was clicked
-        const col = Math.floor(x / (memCanvas.width / 4));
-        const row = Math.floor(y / (memCanvas.height / 4));
-        const emojiIndex = row * 4 + col;
-
-        // Prevent clicking already matched or already revealed cell
-        if (
-            matchedCells.some(cell => cell.col === col && cell.row === row) ||
-            revealedCells.some(cell => cell.col === col && cell.row === row)
-        ) {
-            return;
-        }
-
-        // Reveal the clicked emoji
-        const emoji = revealEmojiAt(col, row, emojiList);
-        revealedCells.push({col, row, emoji, emojiIndex});
-        clicks += 1;
-
-        // If two emojis are revealed, check for a match
-        if (revealedCells.length === 2) {
-            attempts += 1;
-            attemptsDisplay.textContent = attempts;
-            if (revealedCells[0].emoji === revealedCells[1].emoji) {
-                // Matched, keep revealed and update score
-                score += 1;
-                scoreDisplay.textContent = score;
-                matchedCells.push(revealedCells[0], revealedCells[1]);
+        if (revealedCells[0].emoji === revealedCells[1].emoji) {
+            matchedCells.push(...revealedCells);
+            score++;
+            scoreDisplay.textContent = score;
+            revealedCells = [];
+        } else {
+            setTimeout(() => {
+                hideEmojis(gridSize, gridSize);
                 revealedCells = [];
-                clicks = 0;
-            } else {
-                // Not matched, hide after short delay
-                setTimeout(() => {
-                    hideEmojis(4, 4);
-                    revealedCells = [];
-                    clicks = 0;
-                }, 800);
-            }
+            }, 800);
         }
-        if(score == 8) {
-            alert("Congratulations! You've matched all pairs!");
-            // refresh page
-            location.reload();
-        }
-    });
+    }
 
-    // Draw all emojis at the start (for initial reveal)
-    drawEmojis(4, 4, emojiList);
+    if (score === totalPairs) {
+        memCtx.fillStyle = "#FFFFFF"; // make text white
+
+        memCtx.font = "40px Arial";
+        memCtx.textAlign = "center";
+        memCtx.fillText("Game Over", memCanvas.width / 2, 170);
+
+        memCtx.font = "24px Arial";
+        memCtx.fillText(
+        `Score: ${score} pairs in ${attempts} attempts`,
+        memCanvas.width / 2,
+        220
+);
+
+    }
+});
+
+startGame(4);
 </script>
