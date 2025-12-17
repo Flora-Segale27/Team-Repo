@@ -498,4 +498,4 @@ permalink: /solitaire/
  <script type="module" src="main.js"></script>
 
 <body>
-</html>
+</head>
