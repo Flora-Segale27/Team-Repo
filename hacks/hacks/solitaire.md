@@ -323,7 +323,7 @@ permalink: /solitaire/
       to { transform: translateY(0); opacity: 1; }
     }
     .close {
-      color: #6c757d;
+      color: #000000ff;
       float: right;
       font-size: 36px;
       font-weight: bold;
