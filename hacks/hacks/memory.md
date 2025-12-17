@@ -30,6 +30,7 @@ permalink: /javascript/project/memory
     /* Make all difficulty buttons same background, different text colors */
     .easy, .medium, .hard { 
         background-color: #64B5F6; /* same blue for all */
+        font-weight: bold;
     }
 
     .easy { color: green; }
@@ -56,7 +57,7 @@ permalink: /javascript/project/memory
     .difficulty-box h3 {
         margin: 0 0 10px 0;
         font-size: 18px;
-        color: black;
+        color: black !important;
         font-weight: bold;
     }
 
