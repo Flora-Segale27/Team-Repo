@@ -195,6 +195,13 @@ permalink: oopbreakoutgame
           this.dx = currentSpeed * Math.cos(theta);
           this.dy = currentSpeed * Math.sin(theta);
       }
+
+      slowDown(multiplier = 0.5) {
+          const currentSpeed = Math.hypot(this.dx, this.dy) * multiplier;
+          const theta = Math.atan2(this.dy, this.dx);
+          this.dx = currentSpeed * Math.cos(theta);
+          this.dy = currentSpeed * Math.sin(theta);
+      }
       
       collidesWith(obj) {
           return (
@@ -388,6 +395,14 @@ permalink: oopbreakoutgame
           this.activePowerUp = null;
           this.powerUpTimer = 0;
           this.powerUpDuration = 5000; // 5 seconds
+
+          // Slow motion
+          this.slowMotionActive = false;
+          this.slowMotionTimer = 0;
+          this.slowMotionDuration = 3000;
+          this.slowMotionMultiplier = 0.5;
+          this.slowMotionCooldown = 10000; 
+          this.lastSlowMotionTime = 0;
           
           // Brick configuration
           this.brickRows = 4;
@@ -407,6 +422,8 @@ permalink: oopbreakoutgame
                   this.paddle.rightPressed = true;
               } else if (e.key === "Left" || e.key === "ArrowLeft") {
                   this.paddle.leftPressed = true;
+              } else if (e.key === "s" || e.key === "S") {
+                  this.activateSlowMotion();
               }
           });
           
@@ -538,6 +555,25 @@ permalink: oopbreakoutgame
           // Remove inactive power-ups
           this.powerUps = this.powerUps.filter(p => p.active);
       }
+
+      activateSlowMotion() {
+        const now = Date.now(); // Current time
+
+        // block if still on cooldown
+        if (now - this.lastSlowMotionTime < this.slowMotionCooldown) {
+            return;
+        }
+
+        // block if cooldown ended
+          if (!this.slowMotionActive) {
+              this.ball.slowDown(this.slowMotionMultiplier);
+              this.slowMotionActive = true;
+        }
+
+        // Resetting timer
+        this.slowMotionTimer = now;
+        this.lastSlowMotionTime = now;
+      }
       
       checkWinCondition() {
           const activeBricks = this.bricks.filter(brick => brick.isActive()).length;
@@ -620,6 +656,15 @@ permalink: oopbreakoutgame
           this.updatePowerUps();
           this.collisionDetection();
           this.checkBallCollision();
+
+          // Slow motion timer
+          if (this.slowMotionActive) {
+              const elapsed = Date.now() - this.slowMotionTimer;
+              if (elapsed > this.slowMotionDuration) {
+                  this.ball.speedUp(1 / this.slowMotionMultiplier);
+                  this.slowMotionActive = false;
+              }
+          }
           
           if (this.checkWinCondition()) return;
       }
