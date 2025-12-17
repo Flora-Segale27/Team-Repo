@@ -63,6 +63,11 @@ This is the team repo!
             Solitaire
         </div>
     </a>
+    <a href="{{site.baseurl}}/oopbreakoutgame" style="text-decoration: none;">
+        <div style="background-color: #3fccffff; color: white; padding: 10px 20px; border-radius: 5px; font-weight: bold;">
+            Breakout
+        </div>
+    </a>
 </div>
 
 <br>
