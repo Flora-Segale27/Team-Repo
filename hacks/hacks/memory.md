@@ -56,6 +56,8 @@ permalink: /javascript/project/memory
     .difficulty-box h3 {
         margin: 0 0 10px 0;
         font-size: 18px;
+        color: black;
+        font-weight: bold;
     }
 
     /* Center the box */
