@@ -495,7 +495,7 @@ permalink: /solitaire/
     </div>
 
 
- <script type="module" src="/assets/js/solitaire/main.js"></script>
+ <script type="module" src="main.js"></script>
 
 <body>
 </html>
