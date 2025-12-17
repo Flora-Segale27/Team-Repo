@@ -10,6 +10,7 @@ permalink: /javascript/project/memory
         display: block;
         margin-left: auto;
         margin-right: auto;
+        margin-bottom: 20px; /* space below canvas */
     }
 
     h2, p {
@@ -17,15 +18,54 @@ permalink: /javascript/project/memory
     }
 
     button {
+        border: none; /* removed black border */
+        border-radius: 8px; /* rounded corners */
         padding: 8px 14px;
         margin: 8px;
         font-size: 16px;
         cursor: pointer;
+        box-sizing: border-box;
     }
 
-    .end-btn {
-        background-color: #000;
-        color: #fff;
+    /* Make all difficulty buttons same background, different text colors */
+    .easy, .medium, .hard { 
+        background-color: #64B5F6; /* same blue for all */
+        font-weight: bold;
+    }
+
+    .easy { color: green; }
+    .medium { color: orange; }
+    .hard { color: red; }
+
+    .end-btn { 
+        background-color: #ADD8E6; 
+        color: #000; 
+        border-radius: 10px; 
+    }
+
+    /* Box styling for difficulty modes */
+    .difficulty-box {
+        border: 3px solid #000;
+        display: inline-block;
+        padding: 10px 20px;
+        text-align: center;
+        margin-bottom: 15px;
+        background-color: #ADD8E6; /* light blue background */
+        border-radius: 10px; /* rounded corners */
+    }
+
+    .difficulty-box h3 {
+        margin: 0 0 10px 0;
+        font-size: 18px;
+        color: black !important;
+        font-weight: bold;
+    }
+
+    /* Center the box */
+    .difficulty-container {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 20px; /* extra space below */
     }
 </style>
 
@@ -35,9 +75,17 @@ permalink: /javascript/project/memory
 
 <canvas class="memoryCanvas" id="memoryCanvas" width="600" height="400"></canvas>
 
-<div style="text-align:center;">
-    <button onclick="startGame(4)">4 x 4 Grid</button>
-    <button onclick="startGame(5)">5 x 5 Grid</button>
+<!-- Centered Difficulty Modes Box -->
+<div class="difficulty-container">
+    <div class="difficulty-box">
+        <h3>Difficulty Modes</h3>
+        <button class="easy" onclick="startGame(4)">Easy</button>
+        <button class="medium" onclick="startGame(5)">Medium</button>
+        <button class="hard" onclick="startGame(6)">Hard</button>
+    </div>
+</div>
+
+<div style="text-align:center; margin-top:10px;">
     <button class="end-btn" onclick="endGame()">End Game</button>
 </div>
 
@@ -88,9 +136,11 @@ function shuffle(array) {
 }
 
 function generateEmojis(size) {
+    // Enough emojis for up to 6x6 grid (36 cells => 18 pairs)
     const emojiPool = [
         "😀","🎉","🍕","🐶","🌟","🚀","🍎","🦄",
-        "⚽","🎮","🎧","📱","🐱","🍔","🍩"
+        "⚽","🎮","🎧","📱","🐱","🍔","🍩","🪐",
+        "🌈","🛹","🎹","🐸","🍉","🍌"
     ];
 
     totalPairs = Math.floor((size * size) / 2);
@@ -150,8 +200,7 @@ function revealEmoji(col, row) {
     const cellH = memCanvas.height / gridSize;
     const index = row * gridSize + col;
 
-    // 🔹 light blue background instead of white
-    memCtx.fillStyle = "#ADD8E6";
+    memCtx.fillStyle = "#ADD8E6"; // light blue background
     memCtx.fillRect(
         col * cellW + 5,
         row * cellH + 5,
