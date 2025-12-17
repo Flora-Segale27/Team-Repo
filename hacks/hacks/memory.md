@@ -41,6 +41,7 @@ permalink: /javascript/project/memory
         background-color: #ADD8E6; 
         color: #000; 
         border-radius: 10px; 
+        font-weight: bold;
     }
 
     /* Box styling for difficulty modes */
