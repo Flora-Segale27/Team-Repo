@@ -22,7 +22,7 @@ const elements = {
     newGameBtn1: document.getElementById('new_game1'),
     menuReturn: document.getElementById('menu_return'),
     instructions: document.getElementById('instructions'),
-    instructionsModal: document.getElementById('instructions_modal'),
+    instructionsModal: document.getElementById('instructions_model'),
     closeBtn: document.querySelector('.close'),
     hintBtn: document.getElementById('hint_btn'),
     undoBtn: document.getElementById('undo_btn'),
@@ -597,7 +597,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    // Instructions modal
+    // Instructions model
     elements.instructions.addEventListener('click', () => {
         elements.instructionsModal.style.display = 'flex';
     });
