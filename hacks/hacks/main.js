@@ -1,4 +1,4 @@
-// Game state
+/* Game state
 let gameState = {
     deck: [],
     tableau: [[], [], [], [], [], [], []],
@@ -727,3 +727,5 @@ window.onload = () => {
     elements.gameScreen.style.display = 'none';
     elements.gameover.style.display = 'none';
 };
+
+*/
