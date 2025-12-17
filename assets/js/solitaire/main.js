@@ -91,10 +91,10 @@ function dealCards() {
 // Save current game state for undo
 function saveGameState() {
     const stateCopy = {
-        tableau: gameState.tableau.map(pile => [...pile]),
-        foundations: gameState.foundations.map(pile => [...pile]),
-        stock: [...gameState.stock],
-        waste: [...gameState.waste],
+        tableau: gameState.tableau.map(pile => pile.map(card => ({...card}))),
+        foundations: gameState.foundations.map(pile => pile.map(card => ({...card}))),
+        stock: gameState.stock.map(card => ({...card})),
+        waste: gameState.waste.map(card => ({...card})),
         score: gameState.score
     };
     gameState.moves.push(stateCopy);
@@ -105,10 +105,10 @@ function restorePreviousState() {
     if (gameState.moves.length <= 1) return;
     gameState.moves.pop();
     const previousState = gameState.moves[gameState.moves.length - 1];
-    gameState.tableau = previousState.tableau.map(pile => [...pile]);
-    gameState.foundations = previousState.foundations.map(pile => [...pile]);
-    gameState.stock = [...previousState.stock];
-    gameState.waste = [...previousState.waste];
+    gameState.tableau = previousState.tableau.map(pile => pile.map(card => ({...card})));
+    gameState.foundations = previousState.foundations.map(pile => pile.map(card => ({...card})));
+    gameState.stock = previousState.stock.map(card => ({...card}));
+    gameState.waste = previousState.waste.map(card => ({...card}));
     gameState.score = previousState.score;
     updateScore();
     renderGame();
@@ -156,6 +156,7 @@ function renderGame() {
 // Render stock pile
 function renderStockPile() {
     elements.stockPile.innerHTML = '';
+    elements.stockPile.classList.remove('highlighted');
     if (gameState.stock.length > 0) {
         const card = document.createElement('div');
         card.className = 'card face-down';
@@ -244,6 +245,8 @@ function handleStockClick() {
             card.faceUp = false;
             gameState.stock.push(card);
         }
+        gameState.score = Math.max(0, gameState.score - 100);
+        updateScore();
     } else {
         const card = gameState.stock.pop();
         card.faceUp = true;
