@@ -392,6 +392,8 @@ permalink: /solitaire/
             }
         }
     </style>
+</head>
+<body>
     <div class="container">
         <!-- Main Menu -->
         <div id="menu" class="py-4 text-light">
