@@ -86,6 +86,7 @@ let totalPairs = 0;
 
 let isMemorizing = false;
 let gameOver = false;
+let memorizeTimeout = null; // store memorization timeout
 
 /* Lock difficulty buttons */
 function setDifficultyButtonsDisabled(disabled) {
@@ -160,6 +161,8 @@ function drawEmojis(cols, rows) {
 
 /* Hide only unmatched cells */
 function hideEmojis(cols, rows) {
+    if (gameOver) return; // don't hide after game over
+
     const cellW = memCanvas.width / cols;
     const cellH = memCanvas.height / rows;
 
@@ -213,9 +216,14 @@ function startGame(size) {
     drawGrid(size, size);
     drawEmojis(size, size);
 
-    setTimeout(() => {
-        hideEmojis(size, size);
-        isMemorizing = false;
+    // Clear previous timeout if exists
+    if (memorizeTimeout) clearTimeout(memorizeTimeout);
+
+    memorizeTimeout = setTimeout(() => {
+        if (!gameOver) {
+            hideEmojis(size, size);
+            isMemorizing = false;
+        }
         setDifficultyButtonsDisabled(false);
     }, 3000);
 }
@@ -223,6 +231,15 @@ function startGame(size) {
 /* End Game */
 function endGame() {
     gameOver = true;
+
+    // Clear memorize timeout
+    if (memorizeTimeout) {
+        clearTimeout(memorizeTimeout);
+        memorizeTimeout = null;
+    }
+
+    // Make difficulty buttons clickable again
+    setDifficultyButtonsDisabled(false);
 
     memCtx.clearRect(0, 0, memCanvas.width, memCanvas.height);
     memCtx.fillStyle = "rgba(0,0,0,0.85)";
@@ -264,7 +281,6 @@ memCanvas.addEventListener("click", e => {
             revealedCells = [];
         } else {
             setTimeout(() => {
-                // Hide only the two unmatched emojis
                 revealedCells.forEach(cell => {
                     if (!matchedCells.some(m => m.col === cell.col && m.row === cell.row)) {
                         const cellW = memCanvas.width / gridSize;
