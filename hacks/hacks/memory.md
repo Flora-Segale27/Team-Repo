@@ -25,25 +25,11 @@ button {
 }
 
 /* Difficulty buttons */
-.easy {
-    background-color: #64B5F6;
-    color: green;
-}
+.easy { background-color: #64B5F6; color: green; font-weight: bold; }
+.medium { background-color: #64B5F6; color: orange; font-weight: bold; }
+.hard { background-color: #64B5F6; color: red; font-weight: bold; }
 
-.medium {
-    background-color: #64B5F6;
-    color: orange;
-}
-
-.hard {
-    background-color: #64B5F6;
-    color: red;
-}
-
-.end-btn {
-    background-color: #ADD8E6;
-    color: black;
-}
+.end-btn { background-color: #ADD8E6; color: black; }
 
 /* Difficulty box */
 .difficulty-box {
@@ -53,13 +39,11 @@ button {
     border-radius: 12px;
     text-align: center;
 }
-
 .difficulty-box h3 {
-    color: black !important;      /* FIXED */
+    color: black !important;
     font-weight: bold;
     margin-bottom: 10px;
 }
-
 .difficulty-container {
     display: flex;
     justify-content: center;
@@ -89,7 +73,6 @@ button {
 <script>
 const memCanvas = document.getElementById("memoryCanvas");
 const memCtx = memCanvas.getContext("2d");
-
 const scoreDisplay = document.querySelector(".score");
 const attemptsDisplay = document.querySelector(".attempts");
 
@@ -124,7 +107,6 @@ function drawGrid(cols, rows) {
         memCtx.lineTo((memCanvas.width / cols) * i, memCanvas.height);
         memCtx.stroke();
     }
-
     for (let i = 0; i <= rows; i++) {
         memCtx.beginPath();
         memCtx.moveTo(0, (memCanvas.height / rows) * i);
@@ -158,7 +140,7 @@ function generateEmojis(size) {
     shuffle(emojiList);
 }
 
-/* Draw emojis */
+/* Draw all emojis */
 function drawEmojis(cols, rows) {
     const cellW = memCanvas.width / cols;
     const cellH = memCanvas.height / rows;
@@ -170,29 +152,23 @@ function drawEmojis(cols, rows) {
     let i = 0;
     for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
-            memCtx.fillText(
-                emojiList[i],
-                c * cellW + cellW / 2,
-                r * cellH + cellH / 2
-            );
+            memCtx.fillText(emojiList[i], c * cellW + cellW / 2, r * cellH + cellH / 2);
             i++;
         }
     }
 }
 
+/* Hide only unmatched cells */
 function hideEmojis(cols, rows) {
     const cellW = memCanvas.width / cols;
     const cellH = memCanvas.height / rows;
 
     for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
-            memCtx.fillStyle = "#ccc";
-            memCtx.fillRect(
-                c * cellW + 5,
-                r * cellH + 5,
-                cellW - 10,
-                cellH - 10
-            );
+            if (!matchedCells.some(m => m.col === c && m.row === r)) {
+                memCtx.fillStyle = "#CCC";
+                memCtx.fillRect(c * cellW + 5, r * cellH + 5, cellW - 10, cellH - 10);
+            }
         }
     }
 }
@@ -204,28 +180,19 @@ function revealEmoji(col, row) {
     const index = row * gridSize + col;
 
     memCtx.fillStyle = "#ADD8E6";
-    memCtx.fillRect(
-        col * cellW + 5,
-        row * cellH + 5,
-        cellW - 10,
-        cellH - 10
-    );
+    memCtx.fillRect(col * cellW + 5, row * cellH + 5, cellW - 10, cellH - 10);
 
     memCtx.font = `${Math.min(cellW, cellH) * 0.6}px serif`;
     memCtx.textAlign = "center";
     memCtx.textBaseline = "middle";
     memCtx.fillStyle = "#000";
 
-    memCtx.fillText(
-        emojiList[index],
-        col * cellW + cellW / 2,
-        row * cellH + cellH / 2
-    );
+    memCtx.fillText(emojiList[index], col * cellW + cellW / 2, row * cellH + cellH / 2);
 
     return emojiList[index];
 }
 
-/* Game */
+/* Start Game */
 function startGame(size) {
     gridSize = size;
     score = 0;
@@ -253,6 +220,7 @@ function startGame(size) {
     }, 3000);
 }
 
+/* End Game */
 function endGame() {
     gameOver = true;
 
@@ -260,17 +228,13 @@ function endGame() {
     memCtx.fillStyle = "rgba(0,0,0,0.85)";
     memCtx.fillRect(0, 0, memCanvas.width, memCanvas.height);
 
-    memCtx.fillStyle = "#fff";
+    memCtx.fillStyle = "#FFFFFF";
     memCtx.textAlign = "center";
     memCtx.font = "40px Arial";
     memCtx.fillText("Game Over", memCanvas.width / 2, 160);
 
     memCtx.font = "24px Arial";
-    memCtx.fillText(
-        `Score: ${score} pairs in ${attempts} attempts`,
-        memCanvas.width / 2,
-        210
-    );
+    memCtx.fillText(`Score: ${score} pairs in ${attempts} attempts`, memCanvas.width / 2, 210);
 }
 
 /* Click */
@@ -300,7 +264,15 @@ memCanvas.addEventListener("click", e => {
             revealedCells = [];
         } else {
             setTimeout(() => {
-                hideEmojis(gridSize, gridSize);
+                // Hide only the two unmatched emojis
+                revealedCells.forEach(cell => {
+                    if (!matchedCells.some(m => m.col === cell.col && m.row === cell.row)) {
+                        const cellW = memCanvas.width / gridSize;
+                        const cellH = memCanvas.height / gridSize;
+                        memCtx.fillStyle = "#CCC";
+                        memCtx.fillRect(cell.col * cellW + 5, cell.row * cellH + 5, cellW - 10, cellH - 10);
+                    }
+                });
                 revealedCells = [];
             }, 800);
         }
@@ -309,5 +281,6 @@ memCanvas.addEventListener("click", e => {
     if (score === totalPairs) endGame();
 });
 
+/* Start initial game */
 startGame(4);
 </script>
