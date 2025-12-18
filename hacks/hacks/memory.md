@@ -5,69 +5,66 @@ permalink: /javascript/project/memory
 ---
 
 <style>
-    .memoryCanvas { 
-        border: 10px solid #0b1c3d; /* dark blue border */
-        display: block;
-        margin-left: auto;
-        margin-right: auto;
-        margin-bottom: 20px; /* space below canvas */
-    }
+.memoryCanvas { 
+    border: 10px solid #0b1c3d;
+    display: block;
+    margin: 0 auto 20px auto;
+}
 
-    h2, p {
-        text-align: center;
-    }
+h2, p { text-align: center; }
 
-    button {
-        border: none; /* removed black border */
-        border-radius: 8px; /* rounded corners */
-        padding: 8px 14px;
-        margin: 8px;
-        font-size: 16px;
-        cursor: pointer;
-        box-sizing: border-box;
-    }
+button {
+    border: none;
+    border-radius: 10px;
+    padding: 8px 14px;
+    margin: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    box-sizing: border-box;
+    font-weight: bold;
+}
 
-    /* Make all difficulty buttons same background, different text colors */
-    .easy, .medium, .hard { 
-        background-color: #64B5F6; /* same blue for all */
-        font-weight: bold;
-    }
+/* Difficulty buttons */
+.easy {
+    background-color: #64B5F6;
+    color: green;
+}
 
-    .easy { color: green; }
-    .medium { color: orange; }
-    .hard { color: red; }
+.medium {
+    background-color: #64B5F6;
+    color: orange;
+}
 
-    .end-btn { 
-        background-color: #ADD8E6; 
-        color: #000; 
-        border-radius: 10px; 
-        font-weight: bold;
-    }
+.hard {
+    background-color: #64B5F6;
+    color: red;
+}
 
-    /* Box styling for difficulty modes */
-    .difficulty-box {
-        border: 3px solid #000;
-        display: inline-block;
-        padding: 10px 20px;
-        text-align: center;
-        margin-bottom: 15px;
-        background-color: #ADD8E6; /* light blue background */
-        border-radius: 10px; /* rounded corners */
-    }
+.end-btn {
+    background-color: #ADD8E6;
+    color: black;
+}
 
-    .difficulty-box h3 {
-        margin: 0 0 10px 0;
-        font-size: 18px;
-        color: black !important;
-        font-weight: bold;
-    }
+/* Difficulty box */
+.difficulty-box {
+    border: 3px solid #000;
+    padding: 10px 20px;
+    background-color: #ADD8E6;
+    border-radius: 12px;
+    text-align: center;
+}
 
-    /* Center the box */
-    .difficulty-container {
-        display: flex;
-        justify-content: center;
-        margin-bottom: 20px; /* extra space below */
-    }
+.difficulty-box h3 {
+    color: black !important;      /* FIXED */
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.difficulty-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
 </style>
 
 <h2>Memory Game</h2>
@@ -76,7 +73,6 @@ permalink: /javascript/project/memory
 
 <canvas class="memoryCanvas" id="memoryCanvas" width="600" height="400"></canvas>
 
-<!-- Centered Difficulty Modes Box -->
 <div class="difficulty-container">
     <div class="difficulty-box">
         <h3>Difficulty Modes</h3>
@@ -86,16 +82,16 @@ permalink: /javascript/project/memory
     </div>
 </div>
 
-<div style="text-align:center; margin-top:10px;">
+<div style="text-align:center;">
     <button class="end-btn" onclick="endGame()">End Game</button>
 </div>
 
 <script>
-const memCanvas = document.getElementById('memoryCanvas');
-const memCtx = memCanvas.getContext('2d');
+const memCanvas = document.getElementById("memoryCanvas");
+const memCtx = memCanvas.getContext("2d");
 
-const scoreDisplay = document.querySelector('.score');
-const attemptsDisplay = document.querySelector('.attempts');
+const scoreDisplay = document.querySelector(".score");
+const attemptsDisplay = document.querySelector(".attempts");
 
 let gridSize = 4;
 let score = 0;
@@ -105,39 +101,48 @@ let matchedCells = [];
 let emojiList = [];
 let totalPairs = 0;
 
-// ---------- GRID ----------
+let isMemorizing = false;
+let gameOver = false;
+
+/* Lock difficulty buttons */
+function setDifficultyButtonsDisabled(disabled) {
+    document.querySelectorAll(".easy, .medium, .hard").forEach(btn => {
+        btn.disabled = disabled;
+        btn.style.cursor = disabled ? "not-allowed" : "pointer";
+        btn.style.opacity = disabled ? "0.6" : "1";
+    });
+}
+
+/* Grid */
 function drawGrid(cols, rows) {
-    memCtx.strokeStyle = '#0b1c3d'; // dark blue grid lines
+    memCtx.strokeStyle = "#0b1c3d";
     memCtx.lineWidth = 10;
 
-    const w = memCanvas.width;
-    const h = memCanvas.height;
-
-    for (let x = 0; x <= w; x += w / cols) {
+    for (let i = 0; i <= cols; i++) {
         memCtx.beginPath();
-        memCtx.moveTo(x, 0);
-        memCtx.lineTo(x, h);
+        memCtx.moveTo((memCanvas.width / cols) * i, 0);
+        memCtx.lineTo((memCanvas.width / cols) * i, memCanvas.height);
         memCtx.stroke();
     }
 
-    for (let y = 0; y <= h; y += h / rows) {
+    for (let i = 0; i <= rows; i++) {
         memCtx.beginPath();
-        memCtx.moveTo(0, y);
-        memCtx.lineTo(w, y);
+        memCtx.moveTo(0, (memCanvas.height / rows) * i);
+        memCtx.lineTo(memCanvas.width, (memCanvas.height / rows) * i);
         memCtx.stroke();
     }
 }
 
-// ---------- EMOJIS ----------
-function shuffle(array) {
-    for (let i = array.length - 1; i > 0; i--) {
+/* Shuffle */
+function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
+        [arr[i], arr[j]] = [arr[j], arr[i]];
     }
 }
 
+/* Emojis */
 function generateEmojis(size) {
-    // Enough emojis for up to 6x6 grid (36 cells => 18 pairs)
     const emojiPool = [
         "😀","🎉","🍕","🐶","🌟","🚀","🍎","🦄",
         "⚽","🎮","🎧","📱","🐱","🍔","🍩","🪐",
@@ -148,14 +153,12 @@ function generateEmojis(size) {
     const selected = emojiPool.slice(0, totalPairs);
     emojiList = [...selected, ...selected];
 
-    if (size % 2 !== 0) {
-        emojiList.push("❓");
-    }
+    if ((size * size) % 2 !== 0) emojiList.push("❓");
 
     shuffle(emojiList);
 }
 
-// ---------- DRAW ----------
+/* Draw emojis */
 function drawEmojis(cols, rows) {
     const cellW = memCanvas.width / cols;
     const cellH = memCanvas.height / rows;
@@ -164,15 +167,15 @@ function drawEmojis(cols, rows) {
     memCtx.textAlign = "center";
     memCtx.textBaseline = "middle";
 
-    let index = 0;
+    let i = 0;
     for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
             memCtx.fillText(
-                emojiList[index],
+                emojiList[i],
                 c * cellW + cellW / 2,
                 r * cellH + cellH / 2
             );
-            index++;
+            i++;
         }
     }
 }
@@ -183,25 +186,24 @@ function hideEmojis(cols, rows) {
 
     for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
-            if (!matchedCells.some(m => m.col === c && m.row === r)) {
-                memCtx.fillStyle = "#CCC";
-                memCtx.fillRect(
-                    c * cellW + 5,
-                    r * cellH + 5,
-                    cellW - 10,
-                    cellH - 10
-                );
-            }
+            memCtx.fillStyle = "#ccc";
+            memCtx.fillRect(
+                c * cellW + 5,
+                r * cellH + 5,
+                cellW - 10,
+                cellH - 10
+            );
         }
     }
 }
 
+/* Reveal */
 function revealEmoji(col, row) {
     const cellW = memCanvas.width / gridSize;
     const cellH = memCanvas.height / gridSize;
     const index = row * gridSize + col;
 
-    memCtx.fillStyle = "#ADD8E6"; // light blue background
+    memCtx.fillStyle = "#ADD8E6";
     memCtx.fillRect(
         col * cellW + 5,
         row * cellH + 5,
@@ -209,7 +211,11 @@ function revealEmoji(col, row) {
         cellH - 10
     );
 
+    memCtx.font = `${Math.min(cellW, cellH) * 0.6}px serif`;
+    memCtx.textAlign = "center";
+    memCtx.textBaseline = "middle";
     memCtx.fillStyle = "#000";
+
     memCtx.fillText(
         emojiList[index],
         col * cellW + cellW / 2,
@@ -219,55 +225,61 @@ function revealEmoji(col, row) {
     return emojiList[index];
 }
 
-// ---------- GAME ----------
+/* Game */
 function startGame(size) {
     gridSize = size;
     score = 0;
     attempts = 0;
     revealedCells = [];
     matchedCells = [];
+    gameOver = false;
 
     scoreDisplay.textContent = score;
     attemptsDisplay.textContent = attempts;
 
     memCtx.clearRect(0, 0, memCanvas.width, memCanvas.height);
 
+    isMemorizing = true;
+    setDifficultyButtonsDisabled(true);
+
     generateEmojis(size);
     drawGrid(size, size);
     drawEmojis(size, size);
 
-    setTimeout(() => hideEmojis(size, size), 3000);
+    setTimeout(() => {
+        hideEmojis(size, size);
+        isMemorizing = false;
+        setDifficultyButtonsDisabled(false);
+    }, 3000);
 }
 
 function endGame() {
-    memCtx.clearRect(0, 0, memCanvas.width, memCanvas.height);
+    gameOver = true;
 
+    memCtx.clearRect(0, 0, memCanvas.width, memCanvas.height);
     memCtx.fillStyle = "rgba(0,0,0,0.85)";
     memCtx.fillRect(0, 0, memCanvas.width, memCanvas.height);
 
-    memCtx.fillStyle = "#FFFFFF";
+    memCtx.fillStyle = "#fff";
     memCtx.textAlign = "center";
-
     memCtx.font = "40px Arial";
-    memCtx.fillText("Game Over", memCanvas.width / 2, 170);
+    memCtx.fillText("Game Over", memCanvas.width / 2, 160);
 
     memCtx.font = "24px Arial";
     memCtx.fillText(
         `Score: ${score} pairs in ${attempts} attempts`,
         memCanvas.width / 2,
-        220
+        210
     );
 }
 
+/* Click */
 memCanvas.addEventListener("click", e => {
-    if (revealedCells.length >= 2) return;
+    if (isMemorizing || gameOver || revealedCells.length >= 2) return;
 
     const rect = memCanvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    const col = Math.floor(x / (memCanvas.width / gridSize));
-    const row = Math.floor(y / (memCanvas.height / gridSize));
+    const col = Math.floor((e.clientX - rect.left) / (memCanvas.width / gridSize));
+    const row = Math.floor((e.clientY - rect.top) / (memCanvas.height / gridSize));
 
     if (
         matchedCells.some(m => m.col === col && m.row === row) ||
@@ -294,9 +306,7 @@ memCanvas.addEventListener("click", e => {
         }
     }
 
-    if (score === totalPairs) {
-        endGame();
-    }
+    if (score === totalPairs) endGame();
 });
 
 startGame(4);
